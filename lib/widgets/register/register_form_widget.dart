@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:insulog/states/login_form_state.dart';
+import 'package:insulog/states/register_form_state.dart';
 import 'package:insulog/widgets/custom_button_widget.dart';
 import 'package:insulog/widgets/input_text_widget.dart';
 
-class Loginform extends StatefulWidget {
-  final LoginFormState loginFormState;
+class Registerform extends StatefulWidget {
+  final RegisterFormState registerFormState;
   final Size size;
 
-  const Loginform({
+  const Registerform({
     super.key,
     required this.size,
-    required this.loginFormState,
+    required this.registerFormState,
   });
 
   @override
-  State<Loginform> createState() => _LoginformState();
+  State<Registerform> createState() => _RegisterformState();
 }
 
-class _LoginformState extends State<Loginform> {
+class _RegisterformState extends State<Registerform> {
   @override
   void initState() {
     super.initState();
-    widget.loginFormState.addListener(handleNotify);
+    widget.registerFormState.addListener(handleNotify);
   }
 
   void handleNotify() {
@@ -31,7 +31,7 @@ class _LoginformState extends State<Loginform> {
 
   @override
   void dispose() {
-    widget.loginFormState.removeListener(handleNotify);
+    widget.registerFormState.removeListener(handleNotify);
     super.dispose();
   }
 
@@ -42,34 +42,48 @@ class _LoginformState extends State<Loginform> {
       children: [
         Column(
           children: [
+            Row(
+              children: [
+                Expanded(
+                  child: InputTextWidget(
+                    size: widget.size,
+                    label: 'Nome',
+                    controller: widget.registerFormState.usernameController,
+                    placeholder: 'Nome de Usuario',
+                    isPassword: false,
+                    errorMessage: widget.registerFormState.usernameError,
+                  ),
+                ),
+                SizedBox(width: widget.size.width * 0.04, ),
+                Expanded(
+                  child: InputTextWidget(
+                    size: widget.size,
+                    label: 'Sobrenome',
+                    controller: widget.registerFormState.lastnameController,
+                    placeholder: 'Sobrenome',
+                    isPassword: false,
+                    errorMessage: widget.registerFormState.lastnameError,
+                  ),
+                ),
+              ],
+            ),
+               SizedBox(height: widget.size.height * 0.025),
             InputTextWidget(
               size: widget.size,
-              label: 'Usuario',
-              controller: widget.loginFormState.usernameController,
-              placeholder: 'Nome de Usuario',
+              label: 'Email',
+              controller: widget.registerFormState.emailController,
+              placeholder: 'Digite seu email',
               isPassword: false,
-              errorMessage: widget.loginFormState.usernameError, 
+              errorMessage: widget.registerFormState.emailError,
             ),
-              SizedBox(height: widget.size.height * 0.025),
+             SizedBox(height: widget.size.height * 0.025),
             InputTextWidget(
               size: widget.size,
               label: 'Senha',
-              controller: widget.loginFormState.passwordController,
+              controller: widget.registerFormState.passwordController,
               placeholder: 'Digite sua senha',
               isPassword: true,
-              errorMessage: widget.loginFormState.passwordError, 
-            ),
-            
-            SizedBox(height: widget.size.height * 0.01),
-            Center(
-              child: Text(
-                'Esqueci minha senha',
-                style: TextStyle(
-                  color: const Color(0xFF3EA75F),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              errorMessage: widget.registerFormState.passwordError,
             ),
           ],
         ),
@@ -78,17 +92,14 @@ class _LoginformState extends State<Loginform> {
             Container(
               margin: EdgeInsets.only(
                 top: widget.size.height * 0.02,
-                
+                 
               ),
               height: widget.size.height * 0.06,
               child: CustomButtonWidget(
-                onPressed: widget.loginFormState.isLoading
-                    ? null
-                    : () => widget.loginFormState.logar(context),
-                text: "Entrar",
-                isLoading: widget.loginFormState.isLoading,
-                loadingColor: Colors.white,
+                onPressed: () => widget.registerFormState.register(context),
+                text: "Cadastrar",
                 isFontBold: true,
+                isLoading: widget.registerFormState.isLoading,
                 textSize: widget.size.height * 0.025,
                 textColor: Colors.white,
                 onpressTextColor: Colors.grey[600]!,
@@ -123,12 +134,17 @@ class _LoginformState extends State<Loginform> {
             Container(
               margin: EdgeInsets.only(
                 top: widget.size.height * 0.02,
-                 
+                
               ),
               height: widget.size.height * 0.06,
               child: CustomButtonWidget(
-                onPressed: () async => widget.loginFormState.cadastrar(context),
-                text: "Cadastrar",
+                onPressed: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Navigator.pop(context);
+                },
+                text: "Voltar",
+                icon: Icons.arrow_back_ios_sharp,
+                iconColor: const Color(0xFF3EA75F),
                 isFontBold: true,
                 textSize: widget.size.height * 0.025,
                 textColor: const Color(0xFF3EA75F),
@@ -139,6 +155,7 @@ class _LoginformState extends State<Loginform> {
                   blurRadius: 1,
                   offset: const Offset(0, 1),
                 ),
+
                 border: Border.all(color: const Color(0xFF3EA75F), width: 1),
                 borderRadius: BorderRadius.all(Radius.circular(200)),
               ),

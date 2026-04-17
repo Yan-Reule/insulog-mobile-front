@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:insulog/screens/login.dart';
+import 'package:insulog/screens/register.dart';
 import 'screens/home.dart';
 
 void main() {
@@ -39,6 +40,7 @@ class MainApp extends StatelessWidget {
       routes: {
         '/home': (context) =>  HomePage(),
         '/login': (context) =>  LoginScreen(),
+        '/register': (context) =>  Register(),
       },
     );
   }

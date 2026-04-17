@@ -90,21 +90,35 @@ class _CustomButtonWidgetState extends State<CustomButtonWidget> {
   }
 
   @override
+  void dispose() {
+    _state.removeListener(handleNotifier);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (widget.isLoading == true) {
       return Container(
-        height: widget.iconSize ?? 24.0,
-        width: widget.iconSize ?? 24.0,
         alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: widget.colorGradient != null ? null : _getBackgroundColor(),
+          border: Border.all(
+            color: _getBorderColor(),
+            width: widget.border?.top.width ?? 1.0,
+          ),
+          borderRadius: widget.borderRadius,
+          gradient: _getGradient(),
+          boxShadow: _getBoxShadow(),
+        ),
         child: SizedBox(
-          height: widget.iconSize ?? 24.0,
-          width: widget.iconSize ?? 24.0,
+          height: 22.0,
+          width: 22.0,
           child: CircularProgressIndicator(
             strokeWidth: 2.5,
             valueColor: AlwaysStoppedAnimation<Color>(
               widget.loadingColor ??
                   widget.iconColor ??
-                  Theme.of(context).primaryColor,
+                  Colors.green,
             ),
           ),
         ),
