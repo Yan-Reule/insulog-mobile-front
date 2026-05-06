@@ -1,5 +1,6 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:insulog/globals.dart';
 import 'package:insulog/services/api/auth_service.dart';
 import 'package:insulog/services/local/saved_login_service.dart';
 
@@ -50,11 +51,16 @@ class LoginFormState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await AuthService().login(username, password);
+      final loginData = await AuthService().login(username, password);
       await _savedLoginService.saveCredentials(
+        userId: loginData.userId,
         username: username,
         password: password,
       );
+
+      Globals().setUserId(loginData.userId);
+      Globals().setUsername(username);
+
       isLoading = false;
       loginError = null;
 
@@ -115,10 +121,12 @@ class LoginFormState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await AuthService().login(
+      final loginData = await AuthService().login(
         savedCredentials.username,
         savedCredentials.password,
       );
+      Globals().setUserId(loginData.userId);
+      Globals().setUsername(savedCredentials.username);
       isLoading = false;
       notifyListeners();
 
@@ -128,6 +136,7 @@ class LoginFormState extends ChangeNotifier {
       return true;
     } on AuthException {
       await _savedLoginService.clearCredentials();
+      Globals().clearUsername();
       isClicked = false;
       isLoading = false;
       usernameAuthError = null;
@@ -136,6 +145,7 @@ class LoginFormState extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (_) {
+      Globals().clearUsername();
       isClicked = false;
       isLoading = false;
       loginError = null;

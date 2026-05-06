@@ -19,35 +19,31 @@ class HomeHeaderWidget extends StatelessWidget {
           child: Column(
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Olá, Usuário!',
-                        style: TextStyle(
-                          fontSize: size.width * 0.08,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Bem-vindo de volta ao Insulog',
-                        style: TextStyle(
-                          fontSize: size.width * 0.045,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Olá, ${state.returnNameLogin()}!',
+                    style: TextStyle(
+                      fontSize: size.width * 0.08,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   CircleAvatar(
-                    radius: 24, 
+                    backgroundColor: Color.fromARGB(255, 170, 247, 194),
+                    radius: 24,
+                    child: Text(
+                      state.returnFirstNameCaractere(),
+                      style: TextStyle(
+                        fontSize: size.width * 0.08,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3EA75F),
+                      ),
+                    ),
                   ),
                 ],
               ),
               Container(
-                margin: const EdgeInsets.only(top: 16),
+                margin: const EdgeInsets.only(top: 8),
                 padding: const EdgeInsets.all(12),
                 height: size.height * 0.16,
                 decoration: BoxDecoration(
@@ -90,7 +86,7 @@ class HomeHeaderWidget extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                state.mediaGlicose, 
+                                state.mediaGlicose,
                                 style: TextStyle(
                                   height: 0,
                                   fontSize: size.width * 0.12,
@@ -119,7 +115,13 @@ class HomeHeaderWidget extends StatelessWidget {
                             width: size.width * 0.32,
                             padding: EdgeInsets.all(size.width * 0.01),
                             decoration: BoxDecoration(
-                              color: Colors.white54,
+                              color:  state.statusMedia == 0
+                                        ?  Color.fromARGB(255, 255, 183, 0)
+                                        : state.statusMedia == 1
+                                        ? const Color.fromARGB(163, 255, 255, 255)
+                                        : state.statusMedia == 2
+                                        ? Color(state.colorStatusMedia)
+                                        :  Colors.white54,
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(size.width * 0.1),
                                 topRight: Radius.circular(size.width * 0.02),
@@ -128,14 +130,34 @@ class HomeHeaderWidget extends StatelessWidget {
                               ),
                             ),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
+                                   state.statusMedia != 1
+                                        ? Icons.warning
+                                        : Icons.check_circle_rounded,
+                                  color: state.statusMedia == 0
+                                        ? Color.fromARGB(255, 255, 255, 255)
+                                        : state.statusMedia == 1
+                                        ? Color(0xFF3EA75F)
+                                        : state.statusMedia == 2
+                                        ? Color.fromARGB(255, 255, 255, 255)
+                                        : Color.fromARGB(255, 0, 0, 0),
                                   size: size.width * 0.065,
                                 ),
-                                Text("Tudo certo"),
+                                Text(
+                                  state.statusMediaDiariaDescricao,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: state.statusMedia == 0
+                                        ? Color.fromARGB(255, 255, 255, 255)
+                                        : state.statusMedia == 1
+                                        ?   Color(0xFF3EA75F)
+                                        : state.statusMedia == 2
+                                        ? Color.fromARGB(255, 255, 255, 255)
+                                        : Color.fromARGB(255, 0, 0, 0),
+                                  ),
+                                ),
                               ],
                             ),
                           ),

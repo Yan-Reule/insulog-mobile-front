@@ -18,9 +18,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        HomeScreenState().openScreen(context);
-      });
+      homeScreenState.openScreen(context);
     });
   }
 
@@ -28,13 +26,19 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      body: MainBody(
-        children: Column(
-          children: [
-            HomeHeaderWidget(size: size, state: homeScreenState),
-            Expanded(child: HomeBodyWidget(size: size, state: homeScreenState,)),
-          ],
-        ),
+      body: AnimatedBuilder(
+        animation: homeScreenState,
+        builder:
+            (context, _) => MainBody(
+              children: Column(
+                children: [
+                  HomeHeaderWidget(size: size, state: homeScreenState),
+                  Expanded(
+                    child: HomeBodyWidget(size: size, state: homeScreenState),
+                  ),
+                ],
+              ),
+            ),
       ),
     );
   }

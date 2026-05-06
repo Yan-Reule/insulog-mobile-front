@@ -1,101 +1,87 @@
 import 'package:flutter/material.dart';
 import 'package:insulog/states/home_screen_state.dart';
-import 'package:insulog/widgets/custom_button_widget.dart';
+import 'package:insulog/widgets/custom_container_widget.dart';
 import 'package:insulog/widgets/home/glucose_record_list_widget.dart';
 
 class HomeBodyWidget extends StatelessWidget {
   final Size size;
   final HomeScreenState state;
 
-  HomeBodyWidget({super.key, required this.size, required this.state});
-
-  final List<GlucoseRecord> _records = const [
-    GlucoseRecord(
-      time: '7:30',
-      value: 110,
-      mealLabel: 'Caf\u00e9',
-      accentColor: Color(0xFF3EA75F),
-    ),
-    GlucoseRecord(
-      time: '10:30',
-      value: 90,
-      mealLabel: 'Caf\u00e9',
-      accentColor: Color(0xFF3EA75F),
-    ),
-    GlucoseRecord(
-      time: '12:30',
-      value: 50,
-      mealLabel: 'Almo\u00e7o',
-      accentColor: Color(0xFFE15A5A),
-    ),
-  ];
+  const HomeBodyWidget({super.key, required this.size, required this.state});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return CustomContainerWidget(
       width: size.width,
+      innerShadow: const InnerShadow(
+        color: Color.fromARGB(255, 104, 104, 104),
+        blurRadius: 4,
+        spreadRadius: 1,
+        offset: Offset(0, 2),
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFFF2F2F2),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromARGB(255, 104, 104, 104),
-            blurRadius: 3,
-            offset: Offset(0, -1),
-          ),
-        ],
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(size.width * 0.1),
           topRight: Radius.circular(size.width * 0.1),
         ),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            CustomButtonWidget(
-              onPressed: () => state.logout(context),
-              text: 'Sair',
-              textColor: Color.fromARGB(255, 255, 89, 89),
-              textSize: size.width * 0.05,
-            ),
-            Container(
-              margin: EdgeInsets.only(
-                top: size.height * 0.02,
-                left: size.width * 0.05,
-                right: size.width * 0.05,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Registros recentes',
-                    style: TextStyle(
-                      fontSize: size.width * 0.045,
-                      color: Colors.grey[800],
-                      fontWeight: FontWeight.w500,
+      child: RefreshIndicator(
+        onRefresh: state.refreshRecords,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              Container(
+                margin: EdgeInsets.only(
+                  top: size.height * 0.02,
+                  left: size.width * 0.05,
+                  right: size.width * 0.05,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          state.returnCurrentDateLabel(),
+                          style: TextStyle(
+                            fontSize: size.width * 0.04,
+                            color: const Color.fromARGB(255, 100, 100, 100),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'REGISTROS RECENTES',
+                          style: TextStyle(
+                            fontSize: size.width * 0.045,
+                            color: const Color.fromARGB(255, 78, 78, 78),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    'Ter\u00e7a-feira, 17 de outubro',
-                    style: TextStyle(
-                      fontSize: size.width * 0.035,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                size.width * 0.04,
-                size.height * 0.03,
-                size.width * 0.04,
-                size.height * 0.035,
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  size.width * 0.04,
+                  0.0,
+                  size.width * 0.04,
+                  size.height * 0.035,
+                ),
+                child: GlucoseRecordListWidget(
+                  size: size,
+                  records: state.visibleRecords,
+                  onShowMore: !state.isListOp ? state.showMoreRecords : null,
+                  onShowLess: state.isListOp ? state.showLessRecords : null,
+                ),
               ),
-              child: GlucoseRecordListWidget(size: size, records: _records),
-            ),
-            
-          ],
+            ],
+          ),
         ),
       ),
     );

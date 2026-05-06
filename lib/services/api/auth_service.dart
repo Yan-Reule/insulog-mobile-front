@@ -9,12 +9,25 @@ class AuthService {
 
   final ApiService _apiService = ApiService();
 
-  Future<void> login(String username, String password) async {
+  Future<LoginData> login(String username, String password) async {
     try {
-      await _apiService.post('login', {
+      final response = await _apiService.post('login', {
         'username': username,
         'password': password,
       });
+
+      if (response is Map<String, dynamic>) {
+        final userId = _readUserId(response);
+
+        if (userId != null) {
+          return LoginData(userId: userId);
+        }
+      }
+
+      throw AuthException(
+        'Login realizado, mas a API nao retornou o id do usuario.',
+        statusCode: 500,
+      );
     } on ApiException catch (e) {
       if (e.statusCode == 401) {
         throw AuthException('Usuario ou senha invalidos.', statusCode: 401);
@@ -25,9 +38,41 @@ class AuthService {
       }
 
       throw AuthException(e.message, statusCode: e.statusCode);
+    } on AuthException {
+      rethrow;
     } catch (e) {
       throw AuthException('Erro ao tentar logar: $e', statusCode: 500);
     }
+  }
+
+  int? _readUserId(Map<String, dynamic> json) {
+    final directId = _parseId(json['id_usuario'] ?? json['idUsuario'] ?? json['id']);
+
+    if (directId != null) {
+      return directId;
+    }
+
+    final usuario = json['usuario'] ?? json['user'] ?? json['data'];
+
+    if (usuario is Map<String, dynamic>) {
+      return _parseId(
+        usuario['id_usuario'] ?? usuario['idUsuario'] ?? usuario['id'],
+      );
+    }
+
+    return null;
+  }
+
+  int? _parseId(dynamic value) {
+    if (value is int) {
+      return value;
+    }
+
+    if (value is String) {
+      return int.tryParse(value);
+    }
+
+    return null;
   }
 
   Future<void> register(
@@ -54,6 +99,12 @@ class AuthService {
       throw AuthException('Erro ao tentar cadastrar: $e', statusCode: 500);
     }
   }
+}
+
+class LoginData {
+  final int userId;
+
+  const LoginData({required this.userId});
 }
 
 class AuthException implements Exception {
