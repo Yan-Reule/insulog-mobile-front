@@ -23,27 +23,47 @@ class RegistroGlicose {
   }
 
   int get colorStatus {
-    switch (status){
+    switch (status) {
       case 0:
-      return 0xFFFFC81e;
+        return 0xFFFFC81e;
       case 1:
-      return 0xFF3ea75f;
+        return 0xFF3ea75f;
       case 2:
-      return 0xFFD62828;
+        return 0xFFD62828;
       default:
-      return 0xFF808080;
+        return 0xFF808080;
     }
   }
 
   factory RegistroGlicose.fromJson(Map<String, dynamic> json) {
     return RegistroGlicose(
-      id: json['id'],
-      horaDoRegistro: DateTime.parse(json['horaDoRegistro']),
+      id: _readInt(
+        json['id'] ?? json['id_registro_glicose'] ?? json['idRegistroGlicose'],
+      ),
+      horaDoRegistro: DateTime.parse(
+        (json['horaDoRegistro'] ??
+                json['hora_do_registro'] ??
+                json['data_hora'])
+            .toString(),
+      ),
       periodo: json['periodo'] ?? '',
-      nivelGlicose: json['nivelGlicose'],
-      status: json['status'],
-      statusDescricao: json['statusDescricao'],
+      nivelGlicose: _readInt(json['nivelGlicose'] ?? json['nivel_glicose']),
+      status: _readInt(json['status']),
+      statusDescricao:
+          json['statusDescricao'] ?? json['status_descricao'] ?? '',
     );
+  }
+
+  static int _readInt(dynamic value) {
+    if (value is int) {
+      return value;
+    }
+
+    if (value is num) {
+      return value.toInt();
+    }
+
+    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 }
 
@@ -61,7 +81,9 @@ class RegistrosGlicoseResponse {
   });
 
   factory RegistrosGlicoseResponse.fromJson(Map<String, dynamic> json) {
-    final registrosJson = json['registros'];
+    final data = json['data'];
+    final responseJson = data is Map<String, dynamic> ? data : json;
+    final registrosJson = responseJson['registros'] ?? responseJson['dados'];
 
     if (registrosJson is! List) {
       throw FormatException(
@@ -70,12 +92,53 @@ class RegistrosGlicoseResponse {
     }
 
     return RegistrosGlicoseResponse(
-      mediaDiaria: json['mediaDiaria'],
-      statusMediaDiaria: json['statusMediaDiaria'],
-      statusMediaDiariaDescricao: json['statusMediaDiariaDescricao'],
-      registros: registrosJson
-          .map((item) => RegistroGlicose.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      mediaDiaria: _readInt(
+        responseJson['mediaDiaria'] ?? responseJson['media_diaria'],
+      ),
+      statusMediaDiaria: _readInt(
+        responseJson['statusMediaDiaria'] ?? responseJson['status_media_diaria'],
+      ),
+      statusMediaDiariaDescricao:
+          responseJson['statusMediaDiariaDescricao'] ??
+          responseJson['status_media_diaria_descricao'] ??
+          '',
+      registros: _readRegistros(registrosJson),
     );
+  }
+
+  factory RegistrosGlicoseResponse.fromList(List<dynamic> json) {
+    final registros = _readRegistros(json);
+    final media = registros.isEmpty
+        ? 0
+        : (registros
+                  .map((registro) => registro.nivelGlicose)
+                  .reduce((total, nivel) => total + nivel) /
+              registros.length)
+            .round();
+
+    return RegistrosGlicoseResponse(
+      mediaDiaria: media,
+      statusMediaDiaria: 3,
+      statusMediaDiariaDescricao: '',
+      registros: registros,
+    );
+  }
+
+  static List<RegistroGlicose> _readRegistros(List<dynamic> registrosJson) {
+    return registrosJson
+        .map((item) => RegistroGlicose.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  static int _readInt(dynamic value) {
+    if (value is int) {
+      return value;
+    }
+
+    if (value is num) {
+      return value.toInt();
+    }
+
+    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 }

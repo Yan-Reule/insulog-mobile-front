@@ -23,7 +23,7 @@ class HomeScreenState extends ChangeNotifier {
   int _statusMedia = 3;
   int colorStatusMedia = 0xfffefefe;
 
-  int  get statusMedia => _statusMedia;
+  int get statusMedia => _statusMedia;
 
   List<RegistroGlicose> returnList() {
     if (isListOpen) {
@@ -69,10 +69,7 @@ class HomeScreenState extends ChangeNotifier {
     }
 
     try {
-      final dados = await DataService().fetchData(
-        'registros-glicose/dashboard',
-        userId,
-      );
+      final dados = await DataService().fetchData(userId);
 
       registrosGlicose = dados.registros;
       mediaGlicose = dados.mediaDiaria.toString();

@@ -21,23 +21,26 @@ class DataService {
     return '$year-$month-$day $hour:$minute:$second';
   }
 
-  Future<RegistrosGlicoseResponse> fetchData(
-    String endPoint,
-    int idUsuario,
-  ) async {
+  Future<RegistrosGlicoseResponse> fetchData(int idUsuario) async {
     try {
       final hoje = DateTime.now();
       final inicioDoDia = DateTime(hoje.year, hoje.month, hoje.day);
       final fimDoDia = DateTime(hoje.year, hoje.month, hoje.day, 23, 59, 59);
 
-      final response = await _apiService.get(endPoint, queryParameters: {
-        'id_usuario': idUsuario,
-        'dataInicio': formatDateTime(inicioDoDia),
-        'dataFim': formatDateTime(fimDoDia),
-      });
+      final response = await _apiService.get(
+        'registros-glicose/usuario/$idUsuario',
+        queryParameters: {
+          'dataInicio': formatDateTime(inicioDoDia),
+          'dataFim': formatDateTime(fimDoDia),
+        },
+      );
 
       if (response is Map<String, dynamic>) {
         return RegistrosGlicoseResponse.fromJson(response);
+      }
+
+      if (response is List) {
+        return RegistrosGlicoseResponse.fromList(response);
       }
 
       throw DataException('Resposta inesperada da API.');
