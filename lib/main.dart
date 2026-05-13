@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:insulog/app_shell.dart';
+import 'package:insulog/screens/glucose_record_form_screen.dart';
 import 'package:insulog/screens/login.dart';
 import 'package:insulog/screens/register.dart';
 
@@ -41,6 +42,7 @@ class MainApp extends StatelessWidget {
         '/home': (context) => const AppShell(),
         '/login': (context) =>  LoginScreen(),
         '/register': (context) =>  Register(),
+        '/glucoseRecordForm': (context) => const GlucoseRecordFormScreen(),
       },
     );
   }

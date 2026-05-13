@@ -89,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.all(Radius.circular(200)),
               ),
               child: CustomButtonWidget(
+                onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
                 svgPath: "assets/images/google_icon_svg.svg",
                 iconSize: size.height * 0.04,
                 text: "Entrar com Google",

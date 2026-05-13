@@ -31,6 +31,7 @@ class _HomePageState extends State<HomePage> {
         width: size.width * 0.4,
         height: size.height * 0.08,
         child: CustomButtonWidget(
+          onPressed: () => Navigator.pushNamed(context, '/glucoseRecordForm'),
           text: "Novo Registro",
           isFontBold: true,
           icon: Icons.add,
