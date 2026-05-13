@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:insulog/app_shell.dart';
+import 'package:insulog/screens/glucose_record_form_screen.dart';
 import 'package:insulog/screens/login.dart';
 import 'package:insulog/screens/register.dart';
-import 'screens/home.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +39,10 @@ class MainApp extends StatelessWidget {
       ),
       initialRoute: '/login',
       routes: {
-        '/home': (context) =>  HomePage(),
+        '/home': (context) => const AppShell(),
         '/login': (context) =>  LoginScreen(),
         '/register': (context) =>  Register(),
+        '/glucoseRecordForm': (context) => const GlucoseRecordFormScreen(),
       },
     );
   }
