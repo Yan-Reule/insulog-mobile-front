@@ -11,7 +11,7 @@ class ApiService {
 
   factory ApiService() => _instance;
 
-  final String _baseUrl = 'http://192.168.137.1:3000';
+  final String _baseUrl = 'http://192.168.3.114:3000';
 
   Map<String, String> get headers => {
     'Content-Type': 'application/json',

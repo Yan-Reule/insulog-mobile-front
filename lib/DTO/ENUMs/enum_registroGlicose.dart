@@ -1,3 +1,5 @@
+import 'package:insulog/utils/api_date_time_formatter.dart';
+
 class RegistroGlicose {
   final int id;
   final DateTime horaDoRegistro;
@@ -40,11 +42,8 @@ class RegistroGlicose {
       id: _readInt(
         json['id'] ?? json['id_registro_glicose'] ?? json['idRegistroGlicose'],
       ),
-      horaDoRegistro: DateTime.parse(
-        (json['horaDoRegistro'] ??
-                json['hora_do_registro'] ??
-                json['data_hora'])
-            .toString(),
+      horaDoRegistro: ApiDateTimeFormatter.parse(
+        json['horaDoRegistro'] ?? json['hora_do_registro'] ?? json['data_hora'],
       ),
       periodo: json['periodo'] ?? '',
       nivelGlicose: _readInt(json['nivelGlicose'] ?? json['nivel_glicose']),

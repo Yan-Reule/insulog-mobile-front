@@ -1,20 +1,26 @@
+import 'package:insulog/utils/api_date_time_formatter.dart';
+
 class NewRegistroGlicose {
+  final String idUsuario;
   final int nivelGlicose;
   final int periodoId;
   final DateTime horaDoRegistro;
   final DateTime dataDoRegistro;
-  final int qtdInsulina;
+  final int unidadeInsulina;
   final int tipoInsulinaId;
-  final String descricaoRegistro;
+  final String observacao;
+  final LembreteRegistroGlicose? lembrete;
 
   NewRegistroGlicose({
+    required this.idUsuario,
     required this.nivelGlicose,
     required this.periodoId,
     required this.horaDoRegistro,
     required this.dataDoRegistro,
-    required this.qtdInsulina,
+    required this.unidadeInsulina,
     required this.tipoInsulinaId,
-    required this.descricaoRegistro,
+    required this.observacao,
+    this.lembrete,
   });
 
   String get horaFormatada {
@@ -32,23 +38,100 @@ class NewRegistroGlicose {
     return '$day/$month/$year';
   }
 
+  DateTime get dataHoraDoRegistro {
+    return ApiDateTimeFormatter.combineDateAndTime(
+      dataDoRegistro,
+      horaDoRegistro,
+    );
+  }
+
+  String get dataHoraDoRegistroApi {
+    return ApiDateTimeFormatter.format(dataHoraDoRegistro);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id_usuario': idUsuario,
+      'nivel_glicose': nivelGlicose,
+      'id_periodo': periodoId,
+      'data_hora': dataHoraDoRegistroApi,
+      'observacao': observacao,
+      'insulina': {
+        'id_tipo_insulina': tipoInsulinaId,
+        'unidade_insulina': unidadeInsulina,
+      },
+      'lembrete': lembrete?.toJson() ?? {'criar': false},
+    };
+  }
+
   factory NewRegistroGlicose.fromJson(
+    int idUsuario,
     int nivelGlicose,
     int periodoId,
     DateTime horaDoRegistro,
     DateTime dataDoRegistro,
-    int qtdInsulina,
+    int unidadeInsulina,
     int tipoInsulinaId,
-    String descricaoRegistro,
-  ) {
+    String observacao, {
+    LembreteRegistroGlicose? lembrete,
+  }) {
     return NewRegistroGlicose(
+      idUsuario: idUsuario.toString(),
       nivelGlicose: nivelGlicose,
       periodoId: periodoId,
       horaDoRegistro: horaDoRegistro,
       dataDoRegistro: dataDoRegistro,
-      qtdInsulina: qtdInsulina,
+      unidadeInsulina: unidadeInsulina,
       tipoInsulinaId: tipoInsulinaId,
-      descricaoRegistro: descricaoRegistro,
+      observacao: observacao,
+      lembrete: lembrete,
     );
+  }
+}
+
+class LembreteRegistroGlicose {
+  final bool criar;
+  final DateTime? dataDoLembrete;
+  final DateTime? horaDoLembrete;
+  final int? periodoId;
+
+  LembreteRegistroGlicose({
+    required this.criar,
+    this.dataDoLembrete,
+    this.horaDoLembrete,
+    this.periodoId,
+  });
+
+  DateTime? get dataHoraDoLembrete {
+    if (dataDoLembrete == null || horaDoLembrete == null) {
+      return null;
+    }
+
+    return ApiDateTimeFormatter.combineDateAndTime(
+      dataDoLembrete!,
+      horaDoLembrete!,
+    );
+  }
+
+  String? get dataHoraDoLembreteApi {
+    final dataHora = dataHoraDoLembrete;
+
+    if (dataHora == null) {
+      return null;
+    }
+
+    return ApiDateTimeFormatter.format(dataHora);
+  }
+
+  Map<String, dynamic> toJson() {
+    if (!criar) {
+      return {'criar': false};
+    }
+
+    return {
+      'criar': true,
+      'data_hora': dataHoraDoLembreteApi,
+      'id_periodo': periodoId,
+    };
   }
 }

@@ -14,9 +14,8 @@ class HomeBodyWidget extends StatelessWidget {
     return CustomContainerWidget(
       width: size.width,
       innerShadow: const InnerShadow(
-        color: Color.fromARGB(255, 104, 104, 104),
-        blurRadius: 4,
-        spreadRadius: 1,
+        color: Color.fromARGB(80, 0, 0, 0),
+        blurRadius: 2,
         offset: Offset(0, 2),
       ),
       decoration: BoxDecoration(
@@ -76,8 +75,12 @@ class HomeBodyWidget extends StatelessWidget {
                 child: GlucoseRecordListWidget(
                   size: size,
                   records: state.visibleRecords,
-                  onShowMore: !state.isListOp ? state.showMoreRecords : null,
-                  onShowLess: state.isListOp ? state.showLessRecords : null,
+                  onShowMore: state.canShowMoreRecords
+                      ? state.showMoreRecords
+                      : null,
+                  onShowLess: state.canShowLessRecords
+                      ? state.showLessRecords
+                      : null,
                 ),
               ),
             ],

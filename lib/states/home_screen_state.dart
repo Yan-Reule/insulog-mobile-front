@@ -12,12 +12,17 @@ class HomeScreenState extends ChangeNotifier {
 
   factory HomeScreenState() => instance;
 
+  static const int visibleRecordsLimit = 4;
+
   final SavedLoginService _savedLoginService = SavedLoginService();
   late List<RegistroGlicose> registrosGlicose = [];
 
   bool isListOpen = false;
   bool get isListOp => isListOpen;
   List<RegistroGlicose> get visibleRecords => returnList();
+  bool get hasHiddenRecords => registrosGlicose.length > visibleRecordsLimit;
+  bool get canShowMoreRecords => !isListOpen && hasHiddenRecords;
+  bool get canShowLessRecords => isListOpen && hasHiddenRecords;
   String mediaGlicose = '';
   String statusMediaDiariaDescricao = '';
   int _statusMedia = 3;
@@ -30,7 +35,7 @@ class HomeScreenState extends ChangeNotifier {
       return registrosGlicose;
     }
 
-    return registrosGlicose.take(4).toList();
+    return registrosGlicose.take(visibleRecordsLimit).toList();
   }
 
   void setListOpen(bool isOpen) {
@@ -69,7 +74,7 @@ class HomeScreenState extends ChangeNotifier {
     }
 
     try {
-      final dados = await DataService().fetchData(userId);
+      final dados = await DataService().fetchData(userId, 'registros-glicose', true);
 
       registrosGlicose = dados.registros;
       mediaGlicose = dados.mediaDiaria.toString();
@@ -144,7 +149,7 @@ class HomeScreenState extends ChangeNotifier {
   }
 
   void showMoreRecords() {
-    if (isListOpen) {
+    if (!canShowMoreRecords) {
       return;
     }
 
@@ -154,7 +159,7 @@ class HomeScreenState extends ChangeNotifier {
   }
 
   void showLessRecords() {
-    if (!isListOpen) {
+    if (!canShowLessRecords) {
       return;
     }
 

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:insulog/states/glucose_record_form_screen_state.dart';
 import 'package:insulog/widgets/custom_button_widget.dart';
 import 'package:insulog/widgets/custom_container_widget.dart';
+import 'package:insulog/widgets/glucoseRegister/glucose_header_form_widget.dart';
+import 'package:insulog/widgets/glucoseRegister/step_glucose_form_widget.dart';
+import 'package:insulog/widgets/glucoseRegister/step_insulina_form_widget.dart';
+import 'package:insulog/widgets/glucoseRegister/step_period_form_widget.dart';
 import 'package:insulog/widgets/main_body_widget.dart';
 
 class GlucoseRecordFormScreen extends StatefulWidget {
@@ -12,35 +17,37 @@ class GlucoseRecordFormScreen extends StatefulWidget {
 }
 
 class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
-  final _controller = PageController();
-  int step = 0;
+  final glucoseRecordFormState = GlucoseRecordFormScreenState();
 
-  void next() {
-    if (step < 3) {
-      setState(() => step++);
-      _controller.animateToPage(
-        step,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+  @override
+  void initState() {
+    super.initState();
+    glucoseRecordFormState.addListener(handleNotify);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      glucoseRecordFormState.refreshRecords();
+    });
+  }
+
+  void handleNotify() {
+    if (mounted) {
+      setState(() {});
     }
   }
 
-  void back() {
-    if (step > 0) {
-      setState(() => step--);
-      _controller.animateToPage(
-        step,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+  @override
+  void dispose() {
+    glucoseRecordFormState.removeListener(handleNotify);
+    glucoseRecordFormState.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final step = glucoseRecordFormState.step;
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -61,13 +68,13 @@ class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
                   : Color.fromARGB(255, 255, 255, 255),
               bgColor: Color(0xFF3EA75F),
               onpressBgColor: Color.fromARGB(255, 158, 158, 158),
-              onPressed: step == 0 ? null : back,
+              onPressed: step == 0 ? null : glucoseRecordFormState.back,
               boxShadow: step == 0
                   ? null
                   : BoxShadow(
-                      color: Color.fromARGB(255, 158, 158, 158),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+                      color: Color.fromARGB(80, 0, 0, 0),
+                      blurRadius: 2,
+                      offset: Offset(0, 2),
                     ),
             ),
           ),
@@ -89,13 +96,13 @@ class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
               bgColor: Color(0xFF3EA75F),
               onpressBgColor: Color.fromARGB(255, 158, 158, 158),
 
-              onPressed: step == 3 ? null : next,
+              onPressed: step == 3 ? null : glucoseRecordFormState.next,
               boxShadow: step == 3
                   ? null
                   : BoxShadow(
-                      color: Color.fromARGB(255, 158, 158, 158),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+                      color: Color.fromARGB(80, 0, 0, 0),
+                      blurRadius: 2,
+                      offset: Offset(0, 2),
                     ),
             ),
           ),
@@ -104,186 +111,17 @@ class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
       body: MainBody(
         children: Column(
           children: [
-            SizedBox(
-              height: size.height * 0.2,
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: SizedBox(
-                      width: size.width * 0.15,
-                      child: CustomButtonWidget(
-                        isFontBold: true,
-                        inversePosition: true,
-                        textSize: size.height * 0.025,
-                        textColor: Color.fromARGB(255, 255, 0, 0),
-                        icon: Icons.close,
-                        iconColor: Color.fromARGB(255, 255, 0, 0),
-                        iconSize: size.height * 0.035,
-                        onPressed: () => Navigator.pop(context),
-                        bgColor: Color.fromARGB(
-                          255,
-                          255,
-                          0,
-                          0,
-                        ).withOpacity(0.2),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(10),
-                          topRight: Radius.circular(100),
-                          bottomLeft: Radius.circular(100),
-                          bottomRight: Radius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Center(
-                          // child:
-                          // ShaderMask(
-                          //   shaderCallback: (bounds) => LinearGradient(
-                          //     colors: [Color(0xFF65ff95), Color(0xFF3ea75f)],
-                          //     begin: Alignment.topCenter,
-                          //     end: Alignment.bottomCenter,
-                          //   ).createShader(bounds),
-                          child: Text(
-                            "Novo Registro",
-                            style: TextStyle(
-                              fontSize: size.height * 0.045,
-                              fontWeight: FontWeight.bold,
-                              // color: Colors.white,
-                            ),
-                            // ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: size.height * 0.05,
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Column(
-                                children: [
-                                  AnimatedContainer(
-                                    width: step == 0
-                                        ? size.width * 0.3
-                                        : size.width * 0.18,
-                                    height: size.height * 0.005,
-                                    color: const Color(0xFF3EA75F),
-                                    duration: const Duration(milliseconds: 300),
-                                  ),
-                                  SizedBox(height: size.height * 0.005),
-                                  AnimatedScale(
-                                    scale: step == 0 ? 1.3 : 1.0,
-                                    duration: const Duration(milliseconds: 300),
-                                    child: Text(
-                                      "Glicose",
-                                      style: TextStyle(
-                                        fontWeight: step == 0
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Column(
-                                children: [
-                                  AnimatedContainer(
-                                    width: step == 1
-                                        ? size.width * 0.3
-                                        : size.width * 0.18,
-                                    height: size.height * 0.005,
-                                    color: const Color(0xFF3EA75F),
-                                    duration: const Duration(milliseconds: 300),
-                                  ),
-                                  SizedBox(height: size.height * 0.005),
-                                  AnimatedScale(
-                                    scale: step == 1 ? 1.3 : 1.0,
-                                    duration: const Duration(milliseconds: 300),
-                                    child: Text(
-                                      "Periodo",
-                                      style: TextStyle(
-                                        fontWeight: step == 1
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Column(
-                                children: [
-                                  AnimatedContainer(
-                                    width: step == 2
-                                        ? size.width * 0.3
-                                        : size.width * 0.18,
-                                    height: size.height * 0.005,
-                                    color: const Color(0xFF3EA75F),
-                                    duration: const Duration(milliseconds: 300),
-                                  ),
-                                  SizedBox(height: size.height * 0.005),
-                                  AnimatedScale(
-                                    scale: step == 2 ? 1.3 : 1.0,
-                                    duration: const Duration(milliseconds: 300),
-                                    child: Text(
-                                      "Insulina",
-                                      style: TextStyle(
-                                        fontWeight: step == 2
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  AnimatedContainer(
-                                    width: step == 3
-                                        ? size.width * 0.3
-                                        : size.width * 0.18,
-                                    height: size.height * 0.005,
-                                    color: const Color(0xFF3EA75F),
-                                    duration: const Duration(milliseconds: 300),
-                                  ),
-                                  SizedBox(height: size.height * 0.005),
-                                  AnimatedScale(
-                                    scale: step == 3 ? 1.3 : 1.0,
-                                    duration: const Duration(milliseconds: 300),
-                                    child: Text(
-                                      "Confirmar",
-                                      style: TextStyle(
-                                        fontWeight: step == 3
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            GlucoseHeaderFormWidget(
+              size: size,
+              step: step,
+              state: glucoseRecordFormState,
             ),
             Expanded(
               child: CustomContainerWidget(
                 width: size.width,
                 innerShadow: const InnerShadow(
-                  color: Color.fromARGB(255, 104, 104, 104),
-                  blurRadius: 4,
-                  spreadRadius: 1,
+                  color: Color.fromARGB(80, 0, 0, 0),
+                  blurRadius: 2,
                   offset: Offset(0, 2),
                 ),
                 decoration: BoxDecoration(
@@ -297,14 +135,23 @@ class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
                   children: [
                     Expanded(
                       child: PageView(
-                        controller: _controller,
+                        controller: glucoseRecordFormState.controller,
                         physics:
                             const NeverScrollableScrollPhysics(), // só pelos botões
-                        children: const [
-                          Center(child: Text('Etapa 1')),
-                          Center(child: Text('Etapa 2')),
-                          Center(child: Text('Etapa 3')),
-                          Center(child: Text('Etapa 4')),
+                        children: [
+                          StepGlucoseFormWidget(
+                            size: size,
+                            state: glucoseRecordFormState,
+                          ),
+                          StepPeriodFormWidget(
+                            size: size,
+                            state: glucoseRecordFormState,
+                          ),
+                          StepInsulinaFormWidget(
+                            size: size,
+                            state: glucoseRecordFormState,
+                          ),
+                          const Center(child: Text('Etapa 4')),
                         ],
                       ),
                     ),

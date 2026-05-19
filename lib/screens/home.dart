@@ -41,9 +41,9 @@ class _HomePageState extends State<HomePage> {
           onpressBgColor: Color.fromARGB(255, 31, 88, 49),
           borderRadius: BorderRadius.all(Radius.circular(20)),
           boxShadow: BoxShadow(
-            color: Color.fromARGB(255, 104, 104, 104),
-            blurRadius: 3,
-            offset: Offset(1, 3),
+            color: Color.fromARGB(80, 0, 0, 0),
+            blurRadius: 2,
+        offset: Offset(0, 2),
           ),
         ),
       ),

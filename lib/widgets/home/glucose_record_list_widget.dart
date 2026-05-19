@@ -143,7 +143,7 @@ class _GlucoseRecordCard extends StatelessWidget {
           Text(
             record.periodo,
             style: TextStyle(
-              fontSize: size.width * 0.055,
+              fontSize: size.width * 0.05,
               color: const Color(0xFF7C7C7C),
               fontWeight: FontWeight.w400,
             ),
