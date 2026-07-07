@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:insulog/DTO/ENUMs/enum_registroInsulina.dart';
-import 'package:insulog/states/glucose_record_form_screen_state.dart';
-import 'package:insulog/widgets/custom_button_widget.dart';
+import 'package:insulog/states/glucose_record_form_screen_state.dart'; 
 
 class InsulinaRecordFormListWidget extends StatelessWidget {
   final Size size;
@@ -17,30 +16,14 @@ class InsulinaRecordFormListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: size.height * 0.22,
-      margin: EdgeInsets.only(bottom: size.height * 0.02),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(size.width * 0.05),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromARGB(80, 0, 0, 0),
-            blurRadius: 2,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: size.width,
-            margin: EdgeInsets.only(
-              top: size.height * 0.01,
-              left: size.width * 0.03,
-              bottom: size.height * 0.01,
-            ),
+            margin: EdgeInsets.only(bottom: size.height * 0.01),
             child: Text(
               'Valores recentes',
               textAlign: TextAlign.center,
@@ -94,7 +77,7 @@ class InsulinaRecordFormListWidget extends StatelessWidget {
   }
 }
 
-class _InsulinaRecordCard extends StatelessWidget {
+class _InsulinaRecordCard extends StatefulWidget {
   final Size size;
   final RegistroInsulina record;
   final GlucoseRecordFormScreenState state;
@@ -106,55 +89,83 @@ class _InsulinaRecordCard extends StatelessWidget {
   });
 
   @override
+  State<_InsulinaRecordCard> createState() => _InsulinaRecordCardState();
+}
+
+class _InsulinaRecordCardState extends State<_InsulinaRecordCard> {
+  bool isPressed = false;
+
+  void setPressed(bool value) {
+    setState(() {
+      isPressed = value;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: size.width * 0.025),
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF3EA75F)),
-        borderRadius: BorderRadius.circular(size.width * 0.03),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${record.unidadeInsulina}',
-                  style: TextStyle(
-                    height: 0,
-                    fontSize: size.width * 0.06,
-                    color: const Color(0xFF171717),
-                    fontWeight: FontWeight.w700,
+    final Size size = widget.size;
+    return GestureDetector(
+      onTapDown: (_) => setPressed(true),
+      onTapUp: (_) => setPressed(false),
+      onTapCancel: () => setPressed(false),
+      onTap: () => widget.state.usarRegistroInsulina(widget.record),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: size.width * 0.025),
+        decoration: BoxDecoration(
+          color: isPressed ? const Color(0xFF3EA75F) : Colors.white,
+          border: Border.all(color: const Color(0xFF3EA75F)),
+          borderRadius: BorderRadius.circular(widget.size.width * 0.03),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  SizedBox(width: 10),
+                  Row(
+                    children: [
+                      Text(
+                        '${widget.record.unidadeInsulina}',
+                        style: TextStyle(
+                          height: 0,
+                          fontSize: widget.size.width * 0.06,
+                          color: !isPressed
+                              ? const Color(0xFF3EA75F)
+                              : const Color.fromARGB(255, 255, 255, 255),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        'U',
+                        style: TextStyle(
+                          height: 0,
+                          fontSize: widget.size.width * 0.04,
+                          color: !isPressed
+                              ? const Color(0xFF3EA75F)
+                              : const Color.fromARGB(255, 255, 255, 255),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Text(
-                  'U',
-                  style: TextStyle(
-                    height: 0,
-                    fontSize: size.width * 0.04,
-                    color: const Color(0xFF4C4C4C),
-                    fontWeight: FontWeight.w400,
+                  Icon(
+                    widget.record.idTipoInsulina == 1
+                        ? Icons.bolt
+                        : widget.record.idTipoInsulina == 2
+                        ? Icons.speed
+                        : Icons.schedule,
+                    color: !isPressed
+                        ? const Color(0xFF3EA75F)
+                        : const Color.fromARGB(255, 255, 255, 255),
+                    size: widget.size.width * 0.06,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            width: size.width * 0.17,
-            height: size.height * 0.04,
-            child: CustomButtonWidget(
-              text: 'Usar',
-              textColor: Color(0xFF3EA75F),
-              onpressTextColor: Color.fromARGB(255, 255, 255, 255),
-              border: Border.all(color: Color(0xFF3EA75F)),
-              borderRadius: BorderRadius.circular(100),
-              onpressBgColor: Color(0xFF3EA75F),
-              onPressed: () => state.usarRegistroInsulina(record),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

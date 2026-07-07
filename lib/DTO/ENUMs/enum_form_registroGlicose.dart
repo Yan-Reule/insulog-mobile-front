@@ -88,7 +88,7 @@ class NewRegistroGlicose {
     );
   }
 }
-
+ 
 class LembreteRegistroGlicose {
   final bool criar;
   final DateTime? dataDoLembrete;

@@ -5,7 +5,7 @@ class HomeHeaderWidget extends StatelessWidget {
   final Size size;
   final HomeScreenState state;
 
-  HomeHeaderWidget({super.key, required this.size, required this.state});
+  const HomeHeaderWidget({super.key, required this.size, required this.state});
 
   @override
   Widget build(BuildContext context) {

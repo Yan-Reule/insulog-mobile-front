@@ -16,6 +16,13 @@ class GlucoseHeaderFormWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool glicosePreenchida = state.glicosePreenchida;
+    final bool periodoPreenchido = state.periodoPreenchido;
+    final bool insulinaPreenchida = state.insulinaPreenchida;
+    final bool isErroGlicose = state.isErroGlicose;
+    final bool isErroInsulina = state.isErroInsulina;
+    final bool isErroPeriodo = state.isErroPeriodo;
+
     return SizedBox(
       height: size.height * 0.2,
       child: Stack(
@@ -80,7 +87,9 @@ class GlucoseHeaderFormWidget extends StatelessWidget {
                                 ? size.width * 0.3
                                 : size.width * 0.18,
                             height: size.height * 0.005,
-                            color: state.glicosePreenchida
+                            color: isErroGlicose
+                                ? const Color(0xFFFF0000)
+                                : glicosePreenchida
                                 ? const Color(0xFF3EA75F)
                                 : const Color.fromARGB(255, 192, 192, 192),
                             duration: const Duration(milliseconds: 300),
@@ -92,7 +101,9 @@ class GlucoseHeaderFormWidget extends StatelessWidget {
                             child: Text(
                               "Glicose",
                               style: TextStyle(
-                                color: step == 0
+                                color:isErroGlicose
+                                ? const Color(0xFFFF0000)
+                                : step == 0
                                     ? const Color(0xFF3EA75F)
                                     : null,
                                 fontWeight: step == 0
@@ -111,7 +122,9 @@ class GlucoseHeaderFormWidget extends StatelessWidget {
                                 ? size.width * 0.3
                                 : size.width * 0.18,
                             height: size.height * 0.005,
-                            color: state.periodoPreenchido
+                            color: isErroPeriodo
+                                ? const Color(0xFFFF0000)
+                                : periodoPreenchido
                                 ? const Color(0xFF3EA75F)
                                 : const Color.fromARGB(255, 192, 192, 192),
                             duration: const Duration(milliseconds: 300),
@@ -123,9 +136,11 @@ class GlucoseHeaderFormWidget extends StatelessWidget {
                             child: Text(
                               "Período",
                               style: TextStyle(
-                                color: step == 1
-                                    ? const Color(0xFF3EA75F)
-                                    : null,
+                                color: isErroPeriodo
+                                    ? const Color(0xFFFF0000)
+                                    : step == 1
+                                        ? const Color(0xFF3EA75F)
+                                        : null,
                                 fontWeight: step == 1
                                     ? FontWeight.bold
                                     : FontWeight.normal,
@@ -142,7 +157,9 @@ class GlucoseHeaderFormWidget extends StatelessWidget {
                                 ? size.width * 0.3
                                 : size.width * 0.18,
                             height: size.height * 0.005,
-                            color: state.insulinaPreenchida
+                            color: isErroInsulina
+                                ? const Color(0xFFFF0000)
+                                : insulinaPreenchida
                                 ? const Color(0xFF3EA75F)
                                 : const Color.fromARGB(255, 192, 192, 192),
                             duration: const Duration(milliseconds: 300),
@@ -154,9 +171,11 @@ class GlucoseHeaderFormWidget extends StatelessWidget {
                             child: Text(
                               "Insulina",
                               style: TextStyle(
-                                color: step == 2
-                                    ? const Color(0xFF3EA75F)
-                                    : null,
+                                color: isErroInsulina
+                                    ? const Color(0xFFFF0000)
+                                    : step == 2
+                                        ? const Color(0xFF3EA75F)
+                                        : null,
                                 fontWeight: step == 2
                                     ? FontWeight.bold
                                     : FontWeight.normal,

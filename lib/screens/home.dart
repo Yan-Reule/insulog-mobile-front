@@ -18,9 +18,34 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    homeScreenState.addListener(handleNotify);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       homeScreenState.openScreen(context);
     });
+  }
+
+  void handleNotify() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> openGlucoseRecordForm() async {
+    final result = await Navigator.pushNamed(context, '/glucoseRecordForm');
+
+    if (!mounted) {
+      return;
+    }
+
+    if (result == true) {
+      await homeScreenState.refreshRecords();
+    }
+  }
+
+  @override
+  void dispose() {
+    homeScreenState.removeListener(handleNotify);
+    super.dispose();
   }
 
   @override
@@ -31,7 +56,7 @@ class _HomePageState extends State<HomePage> {
         width: size.width * 0.4,
         height: size.height * 0.08,
         child: CustomButtonWidget(
-          onPressed: () => Navigator.pushNamed(context, '/glucoseRecordForm'),
+          onPressed: openGlucoseRecordForm,
           text: "Novo Registro",
           isFontBold: true,
           icon: Icons.add,
@@ -63,4 +88,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
+} 

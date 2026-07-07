@@ -74,6 +74,7 @@ class HomeBodyWidget extends StatelessWidget {
                 ),
                 child: GlucoseRecordListWidget(
                   size: size,
+                  state: state,
                   records: state.visibleRecords,
                   onShowMore: state.canShowMoreRecords
                       ? state.showMoreRecords
@@ -83,6 +84,7 @@ class HomeBodyWidget extends StatelessWidget {
                       : null,
                 ),
               ),
+              SizedBox(height: size.height * 0.08),
             ],
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:insulog/states/glucose_record_form_screen_state.dart';
+import 'package:insulog/widgets/container_card_widget.dart';
 import 'package:insulog/widgets/custom_button_widget.dart';
 
 class TipoInsulinaCardWidget extends StatelessWidget {
@@ -14,19 +15,11 @@ class TipoInsulinaCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: size.height * 0.17,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(size.width * 0.05),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromARGB(80, 0, 0, 0),
-            blurRadius: 2,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+    return ContainerCardWidget(
+      heightFactor: 0.17,
+      widthFactor: 0.9,
+      size: size,
+      isMarginTop: false,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -60,12 +53,13 @@ class TipoInsulinaCardWidget extends StatelessWidget {
                       isFontBold: true,
                       textSize: size.width * 0.045,
                       selected: state.tipoInsulinaId == 1,
+                      isSelectedUnlocked: true,
                       isColumn: true,
                       icon: Icons.bolt,
                       iconSize: size.width * 0.08,
                       iconColor: Color(0xFF3EA75F),
                       onpressIconColor: Colors.white,
-                      onPressed: () => state.atualizarTipoInsulina(1),
+                      onPressed: () => state.atualizarTipoInsulina(1, true),
                     ),
                   ),
                   SizedBox(
@@ -82,12 +76,13 @@ class TipoInsulinaCardWidget extends StatelessWidget {
                       isFontBold: true,
                       textSize: size.width * 0.045,
                       selected: state.tipoInsulinaId == 2,
+                      isSelectedUnlocked: true,
                       isColumn: true,
                       icon: Icons.speed,
                       iconSize: size.width * 0.08,
                       iconColor: Color(0xFF3EA75F),
                       onpressIconColor: Colors.white,
-                      onPressed: () => state.atualizarTipoInsulina(2),
+                      onPressed: () => state.atualizarTipoInsulina(2 , true),
                     ),
                   ),
                   SizedBox(
@@ -104,12 +99,13 @@ class TipoInsulinaCardWidget extends StatelessWidget {
                       isFontBold: true,
                       textSize: size.width * 0.045,
                       selected: state.tipoInsulinaId == 3,
+                      isSelectedUnlocked: true,
                       isColumn: true,
                       icon: Icons.schedule,
                       iconSize: size.width * 0.08,
                       iconColor: Color(0xFF3EA75F),
                       onpressIconColor: Colors.white,
-                      onPressed: () => state.atualizarTipoInsulina(3),
+                      onPressed: () => state.atualizarTipoInsulina(3, true),
                     ),
                   ),
                 ],

@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:insulog/widgets/container_card_widget.dart';
 
 class DateTimeCard extends StatelessWidget {
   final Size size;
@@ -7,7 +7,7 @@ class DateTimeCard extends StatelessWidget {
   final String value;
   final VoidCallback onTap;
 
-  const DateTimeCard({
+  const DateTimeCard({super.key, 
     required this.size,
     required this.icon,
     required this.value,
@@ -19,28 +19,16 @@ class DateTimeCard extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(size.width * 0.05),
       onTap: onTap,
-      child: Container(
-        height: size.height * 0.2,
-        margin: EdgeInsets.only(bottom: size.height * 0.02),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(size.width * 0.05),
-          boxShadow: const [
-            BoxShadow(
-              color: Color.fromARGB(80, 0, 0, 0),
-              blurRadius: 2,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
+      child: ContainerCardWidget(
+        isMarginTop: false,
+        heightFactor: 0.2,
+        widthFactor: 0.9,
+        size: size,
+
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFF3EA75F),
-              size: size.width * 0.08,
-            ),
+            Icon(icon, color: const Color(0xFF3EA75F), size: size.width * 0.08),
             SizedBox(height: size.height * 0.015),
             Text(
               value,

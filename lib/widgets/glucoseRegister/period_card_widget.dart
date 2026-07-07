@@ -1,36 +1,20 @@
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'package:insulog/states/glucose_record_form_screen_state.dart';
+import 'package:insulog/widgets/container_card_widget.dart';
 import 'package:insulog/widgets/custom_button_widget.dart';
 
 class PeriodCardWidget extends StatelessWidget {
   final Size size;
   final GlucoseRecordFormScreenState state;
 
-  const PeriodCardWidget({
-    super.key,
-    required this.size,
-    required this.state,
-  });
-  
+  const PeriodCardWidget({super.key, required this.size, required this.state});
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: size.height * 0.35,
-      margin: EdgeInsets.only(
-        top: size.height * 0.03,
-        bottom: size.height * 0.02,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(size.width * 0.05),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromARGB(80, 0, 0, 0),
-            blurRadius: 2,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+    return ContainerCardWidget(
+      heightFactor: 0.35,
+      widthFactor: 0.9,
+      size: size,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [

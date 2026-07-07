@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:insulog/DTO/ENUMs/enum_form_registroGlicose.dart';
 import 'package:insulog/states/glucose_record_form_screen_state.dart';
 import 'package:insulog/widgets/custom_button_widget.dart';
 import 'package:insulog/widgets/custom_container_widget.dart';
 import 'package:insulog/widgets/glucoseRegister/glucose_header_form_widget.dart';
+import 'package:insulog/widgets/glucoseRegister/step_confirm_form_widget.dart';
 import 'package:insulog/widgets/glucoseRegister/step_glucose_form_widget.dart';
 import 'package:insulog/widgets/glucoseRegister/step_insulina_form_widget.dart';
 import 'package:insulog/widgets/glucoseRegister/step_period_form_widget.dart';
@@ -16,8 +18,19 @@ class GlucoseRecordFormScreen extends StatefulWidget {
       _GlucoseRecordFormScreenState();
 }
 
+class GlucoseRecordFormEditArgs {
+  final int idRegistro;
+  final NewRegistroGlicose registro;
+
+  const GlucoseRecordFormEditArgs({
+    required this.idRegistro,
+    required this.registro,
+  });
+}
+
 class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
   final glucoseRecordFormState = GlucoseRecordFormScreenState();
+  bool _loadedRouteArgs = false;
 
   @override
   void initState() {
@@ -26,6 +39,22 @@ class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       glucoseRecordFormState.refreshRecords();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_loadedRouteArgs) {
+      return;
+    }
+
+    _loadedRouteArgs = true;
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args is GlucoseRecordFormEditArgs) {
+      glucoseRecordFormState.iniciarEdicao(args.idRegistro, args.registro);
+    }
   }
 
   void handleNotify() {
@@ -45,6 +74,8 @@ class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final step = glucoseRecordFormState.step;
+    final isConfirmStep = step == 3;
+    final isCanRegister = isConfirmStep;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -83,20 +114,26 @@ class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
             height: size.height * 0.06,
             margin: const EdgeInsets.only(bottom: 15),
             child: CustomButtonWidget(
-              text: 'Avançar',
+              text: isCanRegister
+                  ? glucoseRecordFormState.isEditing
+                        ? 'Salvar'
+                        : 'Registrar'
+                  : 'Avançar',
               textSize: size.height * 0.025,
-              isFontBold: step == 3 ? false : true,
+              isFontBold: true,
               borderRadius: BorderRadius.all(Radius.circular(15)),
-              selected: step == 3,
-
+              selected: false,
+              icon: isCanRegister ? Icons.save : null,
+              iconColor: Color.fromARGB(255, 255, 255, 255),
+              onpressIconColor: Color.fromARGB(255, 98, 98, 98),
               textColor: Color.fromARGB(255, 255, 255, 255),
               onpressTextColor: step == 3
                   ? Color.fromARGB(255, 98, 98, 98)
                   : Color.fromARGB(255, 255, 255, 255),
-              bgColor: Color(0xFF3EA75F),
+              bgColor: isConfirmStep ? Color(0xFF1E88E5) : Color(0xFF3EA75F),
               onpressBgColor: Color.fromARGB(255, 158, 158, 158),
 
-              onPressed: step == 3 ? null : glucoseRecordFormState.next,
+              onPressed: () => glucoseRecordFormState.next(context),
               boxShadow: step == 3
                   ? null
                   : BoxShadow(
@@ -151,7 +188,10 @@ class _GlucoseRecordFormScreenState extends State<GlucoseRecordFormScreen> {
                             size: size,
                             state: glucoseRecordFormState,
                           ),
-                          const Center(child: Text('Etapa 4')),
+                          StepConfirmFormWidget(
+                            size: size,
+                            state: glucoseRecordFormState,
+                          ),
                         ],
                       ),
                     ),

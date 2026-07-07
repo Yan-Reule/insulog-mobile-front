@@ -81,9 +81,13 @@ class AuthService {
     String email,
     String password,
   ) async {
+    final fullName = [username.trim(), lastname.trim()]
+        .where((part) => part.isNotEmpty)
+        .join(' ');
+
     try {
       await _apiService.post('usuarios', {
-        'nome': username+' '+lastname, 
+        'nome': fullName,
         'email': email,
         'senha': password,
         'tipo_login': 'email',

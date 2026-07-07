@@ -75,7 +75,6 @@ class RegisterFormState extends ChangeNotifier {
 
       if (e.statusCode == 400){
         username.isEmpty ? usernameError = 'Campo obrigatorio' : null;
-        lastname.isEmpty ? lastnameError = 'Campo obrigatorio' : null;
         email.isEmpty ? emailError = 'Campo obrigatorio' : null;
         password.isEmpty ? passwordError = 'Campo obrigatorio' : null;
       }
@@ -117,10 +116,8 @@ class RegisterFormState extends ChangeNotifier {
   }
 
   void _validateLastname() {
-    if (lastname.isEmpty && !isClicked) {
+    if (lastname.isEmpty) {
       lastnameError = null;
-    } else if (lastname.isEmpty && isClicked) {
-      lastnameError = 'Campo obrigatorio';
     } else if (lastname.length < 3) {
       lastnameError = 'O sobrenome deve ter pelo menos 3 caracteres';
     } else {
