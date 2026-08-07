@@ -16,9 +16,10 @@ class ApiIpService {
   }
 
   Future<String> getBaseUrl() async {
-    final digits = await getApiIpDigits();
+    final savedIp = await getApiIpDigits();
     final ip =
-        formatDigitsAsIp(digits) ??
+        (isValidIp(savedIp) ? savedIp : null) ??
+        formatDigitsAsIp(savedIp) ??
         formatDigitsAsIp(_defaultApiIpDigits) ??
         '10.173.57.47';
 
@@ -36,6 +37,22 @@ class ApiIpService {
     }
 
     return _findValidIp(digits);
+  }
+
+  static bool isValidIp(String value) {
+    final octets = value.split('.');
+    if (octets.length != 4) {
+      return false;
+    }
+
+    return octets.every((octet) {
+      if (octet.isEmpty || !RegExp(r'^\d{1,3}$').hasMatch(octet)) {
+        return false;
+      }
+
+      final number = int.tryParse(octet);
+      return number != null && number >= 0 && number <= 255;
+    });
   }
 
   static String? _formatPrivateIp(String digits) {

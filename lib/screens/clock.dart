@@ -1,14 +1,121 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:insulog/states/clock_state.dart';
+import 'package:insulog/widgets/clock/clock_header_widget.dart';
+import 'package:insulog/widgets/clock/clock_record_list_widget.dart';
+import 'package:insulog/widgets/custom_button_widget.dart';
+import 'package:insulog/widgets/custom_container_widget.dart';
 import 'package:insulog/widgets/main_body_widget.dart';
 
-class ClockPage extends StatelessWidget {
+class ClockPage extends StatefulWidget {
   const ClockPage({super.key});
 
   @override
+  State<ClockPage> createState() => _ClockPageState();
+}
+
+class _ClockPageState extends State<ClockPage> {
+  final ClockState stateClock = ClockState();
+
+  static const _alarmChannel = MethodChannel('insulog/alarm');
+  bool _scheduling = false;
+
+  @override
+  initState() {
+    super.initState();
+    stateClock.addListener(handleNotify);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      stateClock.refreshClockRecords();
+    });
+  }
+
+  void handleNotify() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  dispose() {
+    stateClock.removeListener(handleNotify);
+    super.dispose();
+  }
+
+  Future<void> _scheduleTestAlarm() async {
+    setState(() => _scheduling = true);
+    try {
+      final message = await _alarmChannel.invokeMethod<String>(
+        'scheduleTestAlarm',
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message ?? 'Teste preparado.')));
+    } on PlatformException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Nao foi possivel agendar: ${error.message}')),
+      );
+    } finally {
+      if (mounted) setState(() => _scheduling = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: MainBody(children: Center(child: Text('Lembrete (em construção)'))),
+    final Size size = MediaQuery.of(context).size;
+    return Scaffold(
+      body: MainBody(
+        children: Column(
+          children: [
+            ClockHeaderWidget(size: size),
+
+            Expanded(
+              child: CustomContainerWidget(
+                width: size.width,
+                innerShadow: const InnerShadow(
+                  color: Color.fromARGB(80, 0, 0, 0),
+                  blurRadius: 2,
+                  offset: Offset(0, 2),
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF2F2F2),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(size.width * 0.1),
+                    topRight: Radius.circular(size.width * 0.1),
+                  ),
+                ),
+                child: RefreshIndicator(
+                  onRefresh: stateClock.refreshClockRecords,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            size.width * 0.04,
+                            size.height * 0.022,
+                            size.width * 0.04,
+                            size.height * 0.035,
+                          ),
+                          child: ClockRecordListWidget(
+                            size: size,
+                            state: stateClock,
+                            records: stateClock.registros,
+                            isLoading: stateClock.isLoading,
+                            errorMessage: stateClock.errorMessage,
+                          ),
+                        ),
+                        SizedBox(height: size.height * 0.08),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

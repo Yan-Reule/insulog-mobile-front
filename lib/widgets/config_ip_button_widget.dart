@@ -59,9 +59,10 @@ class _ConfigIpDialogState extends State<_ConfigIpDialog> {
   void initState() {
     super.initState();
     _controller = TextEditingController(
-      text:
-          ApiIpService.formatDigitsAsIp(widget.initialDigits) ??
-          widget.initialDigits,
+      text: ApiIpService.isValidIp(widget.initialDigits)
+          ? widget.initialDigits
+          : ApiIpService.formatDigitsAsIp(widget.initialDigits) ??
+                widget.initialDigits,
     );
   }
 
@@ -80,13 +81,16 @@ class _ConfigIpDialogState extends State<_ConfigIpDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Digite os numeros do IP. Os pontos aparecem automaticamente.',
+            'Digite o endereco IP completo, incluindo os pontos.',
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _controller,
-            keyboardType: TextInputType.number,
-            inputFormatters: const [_IpAddressInputFormatter()],
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              LengthLimitingTextInputFormatter(15),
+            ],
             decoration: InputDecoration(
               labelText: 'IP da API',
               hintText: 'Ex: 10.173.57.47',
@@ -107,13 +111,12 @@ class _ConfigIpDialogState extends State<_ConfigIpDialog> {
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _controller,
             builder: (context, value, _) {
-              final digits = _onlyDigits(value.text);
-              final previewIp = ApiIpService.formatDigitsAsIp(digits);
+              final ip = value.text.trim();
 
               return Text(
-                previewIp == null
-                    ? 'Exemplo: 101735747 = 10.173.57.47'
-                    : 'Rota: http://$previewIp:3000',
+                ApiIpService.isValidIp(ip)
+                    ? 'Rota: http://$ip:3000'
+                    : 'Exemplo: 192.168.31.41',
                 style: TextStyle(
                   color: Colors.black.withOpacity(0.55),
                   fontSize: 12,
@@ -134,62 +137,20 @@ class _ConfigIpDialogState extends State<_ConfigIpDialog> {
   }
 
   Future<void> _saveIp() async {
-    final digits = _onlyDigits(_controller.text);
-    final ip = ApiIpService.formatDigitsAsIp(digits);
+    final ip = _controller.text.trim();
 
-    if (ip == null) {
+    if (!ApiIpService.isValidIp(ip)) {
       setState(() {
-        _errorMessage = 'Digite um IP valido usando apenas numeros.';
+        _errorMessage = 'Digite um IP valido. Ex: 192.168.31.41';
       });
       return;
     }
 
-    await widget.apiIpService.saveApiIpDigits(digits);
+    await widget.apiIpService.saveApiIpDigits(ip);
 
     if (mounted) {
       Navigator.of(context).pop();
     }
   }
 
-  static String _onlyDigits(String value) {
-    return value.replaceAll(RegExp(r'\D'), '');
-  }
-}
-
-class _IpAddressInputFormatter extends TextInputFormatter {
-  const _IpAddressInputFormatter();
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
-    final limitedDigits = digits.length > 12 ? digits.substring(0, 12) : digits;
-    final formattedText = _formatIp(limitedDigits);
-
-    return TextEditingValue(
-      text: formattedText,
-      selection: TextSelection.collapsed(offset: formattedText.length),
-    );
-  }
-
-  static String _formatIp(String digits) {
-    if (digits.isEmpty) {
-      return '';
-    }
-
-    final formattedIp = ApiIpService.formatDigitsAsIp(digits);
-    if (formattedIp != null) {
-      return formattedIp;
-    }
-
-    final octets = <String>[];
-    for (var index = 0; index < digits.length; index += 3) {
-      final end = index + 3 > digits.length ? digits.length : index + 3;
-      octets.add(digits.substring(index, end));
-    }
-
-    return octets.join('.');
-  }
 }

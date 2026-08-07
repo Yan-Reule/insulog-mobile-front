@@ -186,7 +186,7 @@ class HomeScreenState extends ChangeNotifier {
                                 ),
                               ],
                             ),
-                          ), 
+                          ),
                           _buildStatusChip(record, size),
                         ],
                       ),
@@ -224,10 +224,7 @@ class HomeScreenState extends ChangeNotifier {
                       height: size.height * 0.052,
                       child: _EditRegistroButton(
                         size: size,
-                        onEdit: () => _editRegistroGlicose(
-                          record,
-                          context,
-                        ),
+                        onEdit: () => _editRegistroGlicose(record, context),
                       ),
                     ),
                     SizedBox(height: size.height * 0.009),
@@ -248,11 +245,8 @@ class HomeScreenState extends ChangeNotifier {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        onPressed: () => _showDeleteRegistroDialog(
-                          record,
-                          context,
-                          size,
-                        ),
+                        onPressed: () =>
+                            _showDeleteRegistroDialog(record, context, size),
                         child: Text(
                           'Excluir ',
                           style: TextStyle(
@@ -560,10 +554,7 @@ class _EditRegistroButton extends StatefulWidget {
   final Size size;
   final Future<void> Function() onEdit;
 
-  const _EditRegistroButton({
-    required this.size,
-    required this.onEdit,
-  });
+  const _EditRegistroButton({required this.size, required this.onEdit});
 
   @override
   State<_EditRegistroButton> createState() => _EditRegistroButtonState();
@@ -624,10 +615,7 @@ class _DeleteRegistroDialog extends StatefulWidget {
   final Size size;
   final Future<void> Function() onDelete;
 
-  const _DeleteRegistroDialog({
-    required this.size,
-    required this.onDelete,
-  });
+  const _DeleteRegistroDialog({required this.size, required this.onDelete});
 
   @override
   State<_DeleteRegistroDialog> createState() => _DeleteRegistroDialogState();

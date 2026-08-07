@@ -23,7 +23,7 @@ class _AppShellState extends State<AppShell> {
   ];
 
   final List<_NavItemData> navItems = const [
-    _NavItemData(icon: Icons.home_outlined, label: 'Registro'),
+    _NavItemData(icon: Icons.home_outlined, label: 'Registros'),
     _NavItemData(icon: Icons.alarm_outlined, label: 'Lembrete'),
     _NavItemData(icon: Icons.description_outlined, label: 'Relatório'),
     _NavItemData(icon: Icons.settings_outlined, label: 'Opções'),

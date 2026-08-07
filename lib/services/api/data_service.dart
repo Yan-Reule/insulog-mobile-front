@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:insulog/DTO/ENUMs/enum_clock_register.dart';
 import 'package:insulog/DTO/ENUMs/enum_form_registroGlicose.dart';
 import 'package:insulog/DTO/ENUMs/enum_registroGlicose.dart';
 import 'package:insulog/DTO/ENUMs/enum_registroInsulina.dart';
@@ -51,6 +52,36 @@ class DataService {
     }
   }
 
+  Future<EnumClockRegisterResponse> fetchClockData(int idUsuario) async {
+    try {
+      final response = await _apiService.get('alarmes/usuario/$idUsuario');
+
+      if (response is Map<String, dynamic>) {
+        return EnumClockRegisterResponse.fromJson(response);
+      }
+
+      if (response is List) {
+        return EnumClockRegisterResponse.fromList(response);
+      }
+
+      throw DataException('Resposta inesperada da API.');
+    } on ApiException catch (e) {
+      throw DataException(e.message, statusCode: e.statusCode);
+    } catch (e) {
+      throw DataException('Erro ao buscar dados: $e');
+    }
+  }
+
+  Future<void> createClockAlarm(EnumClockRegister alarm) async {
+    try {
+      await _apiService.post('alarmes', alarm.toCreateJson());
+    } on ApiException catch (e) {
+      throw DataException(e.message, statusCode: e.statusCode);
+    } catch (e) {
+      throw DataException('Erro ao criar alarme: $e');
+    }
+  }
+
   Future<RegistroInsulinaResponse> fetchInsulinaData(
     int idUsuario, {
     int quantidade = 4,
@@ -98,10 +129,7 @@ class DataService {
     NewRegistroGlicose registro,
   ) async {
     try {
-      await _apiService.put(
-        'registros-glicose/$idRegistro',
-        registro.toJson(),
-      );
+      await _apiService.put('registros-glicose/$idRegistro', registro.toJson());
     } on ApiException catch (e) {
       throw DataException(e.message, statusCode: e.statusCode);
     } catch (e) {
@@ -209,7 +237,6 @@ class DataService {
 
     return int.tryParse(value?.toString() ?? '') ?? 0;
   }
-
 }
 
 class DataException implements Exception {
