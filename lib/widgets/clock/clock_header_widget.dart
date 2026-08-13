@@ -1,69 +1,109 @@
-import 'package:flutter/material.dart'; 
-import 'package:insulog/widgets/custom_button_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:insulog/states/clock_state.dart';
+import 'package:insulog/widgets/dotted_line_widget.dart';
 
 class ClockHeaderWidget extends StatelessWidget {
   final Size size;
-   
-  const ClockHeaderWidget({
-    super.key,
-    required this.size, 
-  });
+  final ClockState state;
+
+  const ClockHeaderWidget({super.key, required this.size, required this.state});
 
   @override
   Widget build(BuildContext context) {
+    const primaryColor = Color(0xFF3EA75F);
+    const titleColor = Color(0xFF171717);
+    const secondaryColor = Color(0xFF6B6B6B);
 
-    return SizedBox(
-      height: size.height * 0.2,
-      child: Stack(
-        children: [ 
-          Positioned(
-            top: 10,
-            right: 10,
-            child: SizedBox(
-              width: size.width * 0.15,
-              child: CustomButtonWidget(
-                isFontBold: true,
-                inversePosition: true,
-                textSize: size.height * 0.025,
-                textColor: Color.fromARGB(255, 255, 0, 0),
-                icon: Icons.close,
-                iconColor: Color.fromARGB(255, 255, 0, 0),
-                iconSize: size.height * 0.035,
-                onPressed: () => Navigator.pop(context),
-                bgColor: Color.fromARGB(255, 255, 0, 0).withOpacity(0.2),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  topRight: Radius.circular(100),
-                  bottomLeft: Radius.circular(100),
-                  bottomRight: Radius.circular(10),
+    return Container(
+      height: size.height * 0.22,
+      padding: EdgeInsets.fromLTRB(
+        size.width * 0.06,
+        size.height * 0.025,
+        size.width * 0.06,
+        size.height * 0.022,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // SizedBox(width: size.width * 0.035),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: size.width * 0.15,
+                      height: size.width * 0.15,
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: const Icon(
+                        Icons.alarm_outlined,
+                        color: primaryColor,
+                        size: 27,
+                      ),
+                    ),
+                    SizedBox(width: size.width * 0.03),
+
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Lembretes',
+                          style: TextStyle(
+                            fontSize: 28,
+                            height: 1.1,
+                            fontWeight: FontWeight.w800,
+                            color: titleColor,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Alarmes e horários',
+                          style: TextStyle(
+                            fontSize: size.width * 0.045,
+                            height: 1.2,
+                            fontWeight: FontWeight.w500,
+                            color: secondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Container(
+            margin: EdgeInsets.symmetric(
+              vertical: size.height * 0.022,
+            ),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: primaryColor.withOpacity(0.6),
+                  width: 2,
                 ),
               ),
             ),
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: Center(
-                  // child:
-                  // ShaderMask(
-                  //   shaderCallback: (bounds) => LinearGradient(
-                  //     colors: [Color(0xFF65ff95), Color(0xFF3ea75f)],
-                  //     begin: Alignment.topCenter,
-                  //     end: Alignment.bottomCenter,
-                  //   ).createShader(bounds),
-                  child: Text(
-                    "Novo Registro",
-                    style: TextStyle(
-                      fontSize: size.height * 0.045,
-                      fontWeight: FontWeight.bold,
-                      // color: Colors.white,
-                    ),
-                    // ),
-                  ),
+              Text(
+                state.infoLembrete(),
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: size.width * 0.055, 
+                  fontWeight: FontWeight.w600,
+                  color: titleColor,
                 ),
               ),
-              
             ],
           ),
         ],

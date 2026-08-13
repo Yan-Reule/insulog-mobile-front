@@ -74,7 +74,31 @@ class _ClockRecordCard extends StatefulWidget {
 }
 
 class _ClockRecordCardState extends State<_ClockRecordCard> {
+  final List<String> diasSemana = [
+    "SEG",
+    "TER",
+    "QUA",
+    "QUI",
+    "SEX",
+    "SAB",
+    "DOM",
+  ];
   bool isPressed = false;
+  IconData get icone => widget.record.periodo == 1
+      ? Icons.wb_twilight
+      : widget.record.periodo == 2
+      ? Icons.restaurant
+      : widget.record.periodo == 3
+      ? Icons.local_dining
+      : widget.record.periodo == 4
+      ? Icons.nights_stay
+      : Icons.error;
+  List<String> get diasSemanaSelec => widget.record.diasSemana is String
+      ? (widget.record.diasSemana as String)
+            .split(',')
+            .map((dia) => dia.trim())
+            .toList()
+      : (widget.record.diasSemana as List).cast<String>();
 
   @override
   void initState() {
@@ -112,7 +136,7 @@ class _ClockRecordCardState extends State<_ClockRecordCard> {
         child: Container(
           padding: EdgeInsets.symmetric(
             horizontal: widget.size.width * 0.045,
-            vertical: widget.size.height * 0.022,
+            vertical: widget.size.height * 0.01,
           ),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -128,48 +152,113 @@ class _ClockRecordCardState extends State<_ClockRecordCard> {
           ),
           child: Row(
             children: [
-              Container(
-                width: widget.size.width * 0.045,
-                height: widget.size.width * 0.045,
-                decoration: BoxDecoration(
-                  color: widget.record.ativo
-                      ? const Color(0xFF3EA75F)
-                      : const Color(0xFF9E9E9E),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(width: widget.size.width * 0.02),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.state.formataHora(widget.record.dataHora),
-                      style: TextStyle(
-                        fontSize: widget.size.width * 0.07,
-                        color: const Color(0xFF171717),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      widget.state.formataDiasSemana(widget.record.diasSemana),
-                      style: TextStyle(
-                        fontSize: widget.size.width * 0.038,
-                        color: const Color(0xFF6B6B6B),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // SizedBox(
+              //   width: widget.size.width * 0.12,
+              //   child: Icon(
+              //     icone,
+              //     color: const Color(0xFF3EA75F),
+              //     size: widget.size.width * 0.09,
+              //   ),
+              // ),
+              // SizedBox(width: widget.size.width * 0.02),
               Text(
-                widget.record.ativo ? 'Ativo' : 'Inativo',
+                widget.state.formataHora(widget.record.dataHora),
                 style: TextStyle(
-                  fontSize: widget.size.width * 0.038,
-                  color: widget.record.ativo
-                      ? const Color(0xFF3EA75F)
-                      : const Color(0xFF7C7C7C),
-                  fontWeight: FontWeight.w600,
+                  fontSize: widget.size.width * 0.08,
+                  color: const Color.fromARGB(255, 3, 3, 3),
+                  // fontWeight: FontWeight.w600,
                 ),
+              ),
+              Expanded(
+                child: widget.record.diasSemana.isNotEmpty
+                    ? Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ...diasSemana.asMap().entries.map((entry) {
+                              final isSelected = diasSemanaSelec.contains(
+                                entry.value,
+                              );
+                              final dia = entry.value == "SEG"
+                                  ? "S"
+                                  : entry.value == "TER"
+                                  ? "T"
+                                  : entry.value == "QUA"
+                                  ? "Q"
+                                  : entry.value == "QUI"
+                                  ? "Q"
+                                  : entry.value == "SEX"
+                                  ? "S"
+                                  : entry.value == "SAB"
+                                  ? "S"
+                                  : entry.value == "DOM"
+                                  ? "D"
+                                  : entry.value;
+
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: widget.size.width * 0.01,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      width: widget.size.width * 0.02,
+                                      height: widget.size.width * 0.02,
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? const Color(0xFF3EA75F)
+                                            : const Color.fromARGB(
+                                                0,
+                                                204,
+                                                204,
+                                                204,
+                                              ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    Text(
+                                      dia,
+                                      style: TextStyle(
+                                        fontSize: widget.size.width * 0.04,
+                                        color: isSelected
+                                            ? const Color(0xFF3EA75F)
+                                            : const Color.fromARGB(
+                                                255,
+                                                185,
+                                                185,
+                                                185,
+                                              ),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ],
+                        ),
+                      )
+                    : const Text('test'),
+              ),
+
+              Switch(
+                value: !widget.record.ativo,
+                activeColor: const Color(0xFF3EA75F),
+
+                inactiveThumbColor: const Color.fromARGB(255, 255, 255, 255),
+                inactiveTrackColor: const Color.fromARGB(255, 192, 192, 192),
+
+                trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((
+                  states,
+                ) {
+                  if (!states.contains(WidgetState.selected)) {
+                    return const Color.fromARGB(0, 102, 95, 95); // borda quando inativo
+                  }
+
+                  return const Color(0xFF3EA75F); // borda quando ativo
+                }),
+
+                onChanged: (newValue) {},
               ),
             ],
           ),

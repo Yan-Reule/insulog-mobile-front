@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:insulog/screens/clock_record_form_screen.dart';
 import 'package:insulog/widgets/app_shell.dart';
 import 'package:insulog/screens/glucose_record_form_screen.dart';
 import 'package:insulog/screens/login.dart';
@@ -43,6 +44,7 @@ class MainApp extends StatelessWidget {
         '/login': (context) =>  LoginScreen(),
         '/register': (context) =>  Register(),
         '/glucoseRecordForm': (context) => const GlucoseRecordFormScreen(),
+        '/clock_register': (context) => const ClockRegisterScreen(),
       },
     );
   }

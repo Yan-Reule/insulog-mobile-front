@@ -96,8 +96,31 @@ class ClockState extends ChangeNotifier {
     return diasSemana.map((day) => labels[day] ?? day).join(', ');
   }
 
+  String infoLembrete() {
+    if (_registros.isEmpty) {
+      return 'Nenhum alarme cadastrado.';
+    }
+
+    final proximoAlarme = _registros.firstWhere(
+      (record) => record.ativo,
+      orElse: () => _registros.first,
+    );
+
+    final hora = formataHora(proximoAlarme.dataHora);
+    final diasSemana = formataDiasSemana(proximoAlarme.diasSemana);
+
+    return 'Próximo alarme: $hora - $diasSemana';
+  }
+
   void setRegistros(List<EnumClockRegister> registros) {
-    _registros = registros;
+    _registros = List<EnumClockRegister>.from(registros)
+      ..sort((a, b) {
+        final minutosA = a.dataHora.hour * 60 + a.dataHora.minute;
+        final minutosB = b.dataHora.hour * 60 + b.dataHora.minute;
+
+        return minutosA.compareTo(minutosB);
+      });
+
     notifyListeners();
   }
 
