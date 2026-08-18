@@ -15,7 +15,7 @@ class ClockHeaderWidget extends StatelessWidget {
     const secondaryColor = Color(0xFF6B6B6B);
 
     return Container(
-      height: size.height * 0.22,
+      height: size.height * 0.25,
       padding: EdgeInsets.fromLTRB(
         size.width * 0.06,
         size.height * 0.025,
@@ -78,9 +78,7 @@ class ClockHeaderWidget extends StatelessWidget {
             ],
           ),
           Container(
-            margin: EdgeInsets.symmetric(
-              vertical: size.height * 0.022,
-            ),
+            margin: EdgeInsets.symmetric(vertical: size.height * 0.022),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -93,15 +91,38 @@ class ClockHeaderWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                state.infoLembrete(),
-                maxLines: 2,
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: size.width * 0.055, 
-                  fontWeight: FontWeight.w600,
-                  color: titleColor,
+              SizedBox(
+                height: size.height * 0.08,
+                width: size.width * 0.85,
+                child: Column(
+                  children: [
+                    Text(
+                      state.infoLembrete(true) == '<@>'
+                          ? ''
+                          : "Próximo alarme: ${state.infoLembrete(true)}",
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: size.width * 0.055,
+                        fontWeight: FontWeight.w600,
+                        color: titleColor,
+                      ),
+                    ),
+                    Text(
+                      state.infoLembrete(true) == '<@>'
+                          ? ''
+                          : state.infoLembrete(false),
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: size.width * 0.055,
+                        fontWeight: FontWeight.w600,
+                        color: titleColor,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

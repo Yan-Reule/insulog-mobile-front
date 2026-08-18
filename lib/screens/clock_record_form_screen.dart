@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:insulog/DTO/ENUMs/enum_form_registroGlicose.dart';
+import 'package:insulog/DTO/ENUMs/enum_clock_register.dart';
 import 'package:insulog/states/clock_state.dart';
-import 'package:insulog/widgets/clock/clock_header_widget.dart';
+import 'package:insulog/widgets/clock/clock_body_widget.dart';
 import 'package:insulog/widgets/clock/clock_register_header_widget.dart';
 import 'package:insulog/widgets/custom_button_widget.dart';
-import 'package:insulog/widgets/custom_container_widget.dart';
-import 'package:insulog/widgets/glucoseRegister/glucose_header_form_widget.dart';
-import 'package:insulog/widgets/glucoseRegister/step_confirm_form_widget.dart';
-import 'package:insulog/widgets/glucoseRegister/step_glucose_form_widget.dart';
-import 'package:insulog/widgets/glucoseRegister/step_insulina_form_widget.dart';
-import 'package:insulog/widgets/glucoseRegister/step_period_form_widget.dart';
 import 'package:insulog/widgets/main_body_widget.dart';
 
 class ClockRegisterScreen extends StatefulWidget {
@@ -20,26 +14,20 @@ class ClockRegisterScreen extends StatefulWidget {
 }
 
 class ClockRegisterFormEditArgs {
-  final int idRegistro;
-  final NewRegistroGlicose registro;
+  final EnumClockRegister alarm;
 
-  const ClockRegisterFormEditArgs({
-    required this.idRegistro,
-    required this.registro,
-  });
+  const ClockRegisterFormEditArgs({required this.alarm});
 }
 
 class _ClockRegisterScreenState extends State<ClockRegisterScreen> {
   final stateClock = ClockState();
-  // bool _loadedRouteArgs = false;
+  bool _loadedRouteArgs = false;
 
   @override
   void initState() {
     super.initState();
+    stateClock.initializeNewAlarm();
     stateClock.addListener(handleNotify);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      stateClock.refreshClockRecords();
-    });
   }
 
   void handleNotify() {
@@ -54,21 +42,23 @@ class _ClockRegisterScreenState extends State<ClockRegisterScreen> {
     super.dispose();
   }
 
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-  //   if (_loadedRouteArgs) {
-  //     return;
-  //   }
+    if (_loadedRouteArgs) {
+      return;
+    }
 
-  //   _loadedRouteArgs = true;
-  //   final args = ModalRoute.of(context)?.settings.arguments;
+    _loadedRouteArgs = true;
+    final args = ModalRoute.of(context)?.settings.arguments;
 
-  //   if (args is GlucoseRecordFormEditArgs) {
-  //     stateClock.iniciarEdicao(args.idRegistro, args.registro);
-  //   }
-  // }
+    if (args is ClockRegisterFormEditArgs) {
+      stateClock.initializeAlarmEditing(args.alarm);
+    } else if (args is EnumClockRegister) {
+      stateClock.initializeAlarmEditing(args);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +75,7 @@ class _ClockRegisterScreenState extends State<ClockRegisterScreen> {
             height: size.height * 0.06,
             margin: const EdgeInsets.only(bottom: 15),
             child: CustomButtonWidget(
-              text: 'Salvar',
+              text: stateClock.isSaving ? 'Salvando...' : 'Salvar',
               textSize: size.height * 0.025,
               isFontBold: true,
               borderRadius: BorderRadius.all(Radius.circular(15)),
@@ -94,11 +84,13 @@ class _ClockRegisterScreenState extends State<ClockRegisterScreen> {
               iconColor: Color.fromARGB(255, 255, 255, 255),
               onpressIconColor: Color.fromARGB(255, 98, 98, 98),
               textColor: Color.fromARGB(255, 255, 255, 255),
-              onpressTextColor: Color.fromARGB(255, 255, 255, 255),
+              onpressTextColor:  Color.fromARGB(255, 98, 98, 98),
               bgColor: Color(0xFF3EA75F),
               onpressBgColor: Color.fromARGB(255, 158, 158, 158),
 
-              onPressed: () => (context),
+              onPressed: stateClock.isSaving
+                  ? null
+                  : () => stateClock.saveAlarm(context),
               boxShadow: BoxShadow(
                 color: Color.fromARGB(80, 0, 0, 0),
                 blurRadius: 2,
@@ -108,35 +100,12 @@ class _ClockRegisterScreenState extends State<ClockRegisterScreen> {
           ),
         ],
       ),
-      body: 
-      
-      MainBody(
+      body: MainBody(
         children: Column(
           children: [
             ClockRegisterHeaderWidget(size: size, state: stateClock),
 
-            Expanded(
-              child: CustomContainerWidget(
-                width: size.width,
-                innerShadow: const InnerShadow(
-                  color: Color.fromARGB(80, 0, 0, 0),
-                  blurRadius: 2,
-                  offset: Offset(0, 2),
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF2F2F2),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(size.width * 0.1),
-                    topRight: Radius.circular(size.width * 0.1),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    
-                  ],
-                ),
-              ),
-            ),
+            Expanded(child: ClockBodyWidget()),
           ],
         ),
       ),

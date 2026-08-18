@@ -41,58 +41,27 @@ class ClockRegisterHeaderWidget extends StatelessWidget {
             ),
           ),
         Container(
-          height: size.height * 0.3,
+          height: size.height * 0.12,
           padding: EdgeInsets.fromLTRB(
             size.width * 0.06,
             size.height * 0.025,
             size.width * 0.06,
             size.height * 0.022,
           ),
-          child: Column( 
-            children: [
-              SizedBox(
-                height: size.height * 0.1,
-                child: Center(
-                  child: Text(
-                    'Novo Lembrete',
-                    style: TextStyle(
-                      fontSize: 28,
-                      height: 1.1,
-                      fontWeight: FontWeight.w800,
-                      color: titleColor,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
+          child: SizedBox(
+            height: size.height * 0.1,
+            child: Center(
+              child: Text(
+                state.isEditing ? 'Editar Lembrete' : 'Novo Lembrete',
+                style: TextStyle(
+                  fontSize: 28,
+                  height: 1.1,
+                  fontWeight: FontWeight.w800,
+                  color: titleColor,
+                  letterSpacing: -0.5,
                 ),
               ),
-              Container(
-                margin: EdgeInsets.symmetric(vertical: size.height * 0.022),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: primaryColor.withOpacity(0.6),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "state.infoLembrete()",
-                    maxLines: 2,
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: size.width * 0.055,
-                      fontWeight: FontWeight.w600,
-                      color: titleColor,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ],

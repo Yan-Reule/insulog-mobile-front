@@ -1,8 +1,11 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:insulog/DTO/ENUMs/clock_alarm_draft.dart';
 import 'package:insulog/DTO/ENUMs/enum_clock_register.dart';
 import 'package:insulog/globals.dart';
 import 'package:insulog/services/api/data_service.dart';
 import 'package:insulog/services/local/saved_login_service.dart';
+import 'package:insulog/widgets/custom_button_widget.dart';
 
 class ClockState extends ChangeNotifier {
   ClockState._();
@@ -16,12 +19,240 @@ class ClockState extends ChangeNotifier {
   final SavedLoginService _savedLoginService = SavedLoginService();
   int? _recordSelectedId;
   bool _isLoading = false;
+  bool _isSaving = false;
+  int? _editingAlarmId;
   String? _errorMessage;
+  final Set<int> _updatingAlarmIds = <int>{};
+  ClockAlarmDraft _novoAlarme = ClockAlarmDraft.defaults(
+    idUsuario: Globals().userId,
+  );
 
   int? get recordSelectedId => _recordSelectedId;
   List<EnumClockRegister> get registros => _registros;
   bool get isLoading => _isLoading;
+  bool get isSaving => _isSaving;
+  bool get isEditing => _editingAlarmId != null;
   String? get errorMessage => _errorMessage;
+  ClockAlarmDraft get novoAlarme => _novoAlarme;
+
+  void initializeNewAlarm() {
+    _editingAlarmId = null;
+    _novoAlarme = ClockAlarmDraft.defaults(idUsuario: Globals().userId);
+  }
+
+  void initializeAlarmEditing(EnumClockRegister alarm) {
+    _editingAlarmId = alarm.idAlarme;
+    _novoAlarme = ClockAlarmDraft(
+      idUsuario: alarm.idUsuario,
+      dataHora: alarm.dataHora,
+      periodoId: alarm.periodo,
+      registroId: alarm.idRegistro,
+      diasSemana: List<String>.unmodifiable(alarm.diasSemana),
+      ativo: alarm.ativo,
+      vibracao: alarm.temVibracao,
+      som: alarm.temSom,
+    );
+    notifyListeners();
+  }
+
+  Future<void> saveAlarm(BuildContext context) async {
+    if (_isSaving) {
+      return;
+    }
+
+    var userId = Globals().userId;
+    if (userId <= 0) {
+      final credenciais = await _savedLoginService.getCredentials();
+      userId = credenciais?.userId ?? 0;
+    }
+
+    if (userId <= 0) {
+      if (context.mounted) {
+        _showMessage(context, 'Usuário não identificado. Entre novamente.');
+      }
+      return;
+    }
+
+    const validDays = {'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'};
+    final days = _novoAlarme.diasSemana
+        .map((day) => day.trim().toUpperCase())
+        .where(validDays.contains)
+        .toSet()
+        .toList(growable: false);
+
+    if (days.isEmpty) {
+      if (context.mounted) {
+        _showMessage(context, 'Selecione pelo menos um dia da semana.');
+      }
+      return;
+    }
+
+    _isSaving = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final alarm = _novoAlarme.copyWith(
+        idUsuario: userId,
+        diasSemana: days,
+        // Novos alarmes desta tela são independentes. Na edição, um vínculo
+        // já existente precisa ser preservado.
+        registroId: isEditing ? _novoAlarme.registroId : 0,
+      );
+      if (isEditing) {
+        await DataService().updateClockAlarmDetails(_editingAlarmId!, alarm);
+      } else {
+        await DataService().createClockAlarm(alarm);
+      }
+
+      if (context.mounted) {
+        Navigator.pop(context, true);
+      }
+    } on DataException catch (e) {
+      _errorMessage = e.message;
+      if (context.mounted) {
+        _showMessage(context, e.message);
+      }
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    Flushbar(
+      flushbarPosition: FlushbarPosition.TOP,
+      message: message,
+      messageColor: Colors.white,
+      backgroundColor: const Color.fromARGB(255, 211, 47, 47),
+      duration: const Duration(seconds: 3),
+    ).show(context);
+  }
+
+  void updateNewAlarmHour(int hour) {
+    if (_novoAlarme.hora == hour) {
+      return;
+    }
+
+    final current = _novoAlarme.dataHora;
+    _novoAlarme = _novoAlarme.copyWith(
+      dataHora: DateTime(
+        current.year,
+        current.month,
+        current.day,
+        hour,
+        current.minute,
+      ),
+    );
+    notifyListeners();
+  }
+
+  void updateNewAlarmMinute(int minute) {
+    if (_novoAlarme.minuto == minute) {
+      return;
+    }
+
+    final current = _novoAlarme.dataHora;
+    _novoAlarme = _novoAlarme.copyWith(
+      dataHora: DateTime(
+        current.year,
+        current.month,
+        current.day,
+        current.hour,
+        minute,
+      ),
+    );
+    notifyListeners();
+  }
+
+  void updateNewAlarmSound(bool enabled) {
+    if (_novoAlarme.som == enabled) {
+      return;
+    }
+
+    _novoAlarme = _novoAlarme.copyWith(som: enabled);
+    notifyListeners();
+  }
+
+  void updateNewAlarmVibration(bool enabled) {
+    if (_novoAlarme.vibracao == enabled) {
+      return;
+    }
+
+    _novoAlarme = _novoAlarme.copyWith(vibracao: enabled);
+    notifyListeners();
+  }
+
+  void updateNewAlarmActive(bool enabled) {
+    if (_novoAlarme.ativo == enabled) {
+      return;
+    }
+
+    _novoAlarme = _novoAlarme.copyWith(ativo: enabled);
+    notifyListeners();
+  }
+
+  void updateNewAlarmDays(List<String> days) {
+    if (_sameDays(_novoAlarme.diasSemana, days)) {
+      return;
+    }
+
+    _novoAlarme = _novoAlarme.copyWith(
+      diasSemana: List<String>.unmodifiable(days),
+    );
+    notifyListeners();
+  }
+
+  void updateNewAlarmPeriod(int periodId) {
+    if (_novoAlarme.periodoId == periodId) {
+      return;
+    }
+
+    _novoAlarme = _novoAlarme.copyWith(periodoId: periodId);
+    notifyListeners();
+  }
+
+  void updateNewAlarmRecord(int recordId) {
+    if (_novoAlarme.registroId == recordId) {
+      return;
+    }
+
+    _novoAlarme = _novoAlarme.copyWith(registroId: recordId);
+    notifyListeners();
+  }
+
+  bool _sameDays(List<String> currentDays, List<String> newDays) {
+    if (currentDays.length != newDays.length) {
+      return false;
+    }
+
+    for (var index = 0; index < currentDays.length; index++) {
+      if (currentDays[index] != newDays[index]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  String nomePeriodo(int periodoId) {
+    switch (periodoId) {
+      case 1:
+        return 'Jejum';
+      case 2:
+        return 'Pré-Prandial';
+      case 3:
+        return 'Pós-Prandial';
+      case 4:
+        return 'Noturna';
+      default:
+        return '';
+    }
+  }
+
+  bool isUpdatingAlarm(int idAlarme) {
+    return _updatingAlarmIds.contains(idAlarme);
+  }
 
   bool isRecordSelected(EnumClockRegister record) {
     return _recordSelectedId == record.idAlarme;
@@ -96,9 +327,9 @@ class ClockState extends ChangeNotifier {
     return diasSemana.map((day) => labels[day] ?? day).join(', ');
   }
 
-  String infoLembrete() {
+  String infoLembrete(bool isReturnHora) {
     if (_registros.isEmpty) {
-      return 'Nenhum alarme cadastrado.';
+      return '<@>';
     }
 
     final proximoAlarme = _registros.firstWhere(
@@ -109,7 +340,11 @@ class ClockState extends ChangeNotifier {
     final hora = formataHora(proximoAlarme.dataHora);
     final diasSemana = formataDiasSemana(proximoAlarme.diasSemana);
 
-    return 'Próximo alarme: $hora - $diasSemana';
+    if (isReturnHora) {
+      return hora;
+    } else {
+      return diasSemana;
+    }
   }
 
   void setRegistros(List<EnumClockRegister> registros) {
@@ -124,17 +359,61 @@ class ClockState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateAlarmStatus(EnumClockRegister record, bool ativo) async {
+    if (_updatingAlarmIds.contains(record.idAlarme)) {
+      return;
+    }
+
+    _updatingAlarmIds.add(record.idAlarme);
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updatedAlarm = await DataService().updateClockAlarm(
+        record.idAlarme,
+        record.copyWith(ativo: ativo),
+      );
+      final index = _registros.indexWhere(
+        (alarm) => alarm.idAlarme == record.idAlarme,
+      );
+
+      if (index >= 0) {
+        _registros[index] = updatedAlarm;
+      }
+    } on DataException catch (e) {
+      _errorMessage = e.message;
+      rethrow;
+    } finally {
+      _updatingAlarmIds.remove(record.idAlarme);
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteClockAlarm(EnumClockRegister record) async {
+    await DataService().deleteClockAlarm(record.idAlarme);
+    _registros.removeWhere((alarm) => alarm.idAlarme == record.idAlarme);
+    notifyListeners();
+  }
+
   Future<void> onLongPressRecord(
     EnumClockRegister record,
     BuildContext context,
     Size size,
   ) async {
+    final icone = switch (record.periodo) {
+      1 => Icons.wb_twilight,
+      2 => Icons.restaurant,
+      3 => Icons.local_dining,
+      4 => Icons.nights_stay,
+      _ => Icons.error,
+    };
+
     _recordSelectedId = record.idAlarme;
     notifyListeners();
 
     await showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return Dialog(
           insetPadding: EdgeInsets.symmetric(horizontal: size.width * 0.07),
           shape: RoundedRectangleBorder(
@@ -160,7 +439,7 @@ class ClockState extends ChangeNotifier {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
                           width: size.width * 0.12,
@@ -170,34 +449,22 @@ class ClockState extends ChangeNotifier {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            Icons.water_drop,
-                            // color: Color(record.colorStatus),
-                            size: size.width * 0.065,
+                            icone,
+                            color: Color(0xFF3EA75F),
+                            size: size.width * 0.12,
                           ),
                         ),
                         SizedBox(width: size.width * 0.035),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Detalhes do alarme',
-                                style: TextStyle(
-                                  fontSize: size.width * 0.052,
-                                  color: const Color(0xFF171717),
-                                  fontWeight: FontWeight.w700,
-                                ),
+                          child: Center(
+                            child: Text(
+                              'Detalhes',
+                              style: TextStyle(
+                                fontSize: size.width * 0.065,
+                                color: const Color(0xFF171717),
+                                fontWeight: FontWeight.w700,
                               ),
-                              SizedBox(height: size.height * 0.004),
-                              Text(
-                                '${formataData(record.dataHora)} as ${formataHora(record.dataHora)}',
-                                style: TextStyle(
-                                  fontSize: size.width * 0.038,
-                                  color: const Color(0xFF6B6B6B),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                         IconButton(
@@ -206,7 +473,7 @@ class ClockState extends ChangeNotifier {
                             minWidth: 40,
                             minHeight: 40,
                           ),
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () => Navigator.pop(dialogContext),
                           icon: Icon(Icons.close, size: size.width * 0.08),
                           color: const Color(0xFF6B6B6B),
                         ),
@@ -223,13 +490,74 @@ class ClockState extends ChangeNotifier {
                         color: const Color(0xFFF6F6F6),
                         borderRadius: BorderRadius.circular(size.width * 0.03),
                       ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Horario',
+                                style: TextStyle(
+                                  fontSize: size.width * 0.045,
+                                  color: const Color(0xFF6B6B6B),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: size.height * 0.004),
+                              Text(
+                                formataHora(record.dataHora),
+                                style: TextStyle(
+                                  fontSize: size.width * 0.07,
+                                  color: const Color(0xFF171717),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Periodo',
+                                style: TextStyle(
+                                  fontSize: size.width * 0.045,
+                                  color: const Color(0xFF6B6B6B),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: size.height * 0.004),
+                              Text(
+                                nomePeriodo(record.periodo),
+                                style: TextStyle(
+                                  fontSize: size.width * 0.06,
+                                  color: const Color(0xFF171717),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.018),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: size.width * 0.045,
+                        vertical: size.height * 0.018,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF6F6F6),
+                        borderRadius: BorderRadius.circular(size.width * 0.03),
+                      ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            record.ativo ? 'Alarme ativo' : 'Alarme inativo',
+                            'Dias da Semana',
                             style: TextStyle(
-                              fontSize: size.width * 0.038,
+                              fontSize: size.width * 0.045,
                               color: const Color(0xFF6B6B6B),
                               fontWeight: FontWeight.w600,
                             ),
@@ -237,28 +565,83 @@ class ClockState extends ChangeNotifier {
                           SizedBox(height: size.height * 0.004),
                           Text(
                             formataDiasSemana(record.diasSemana),
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: size.width * 0.055,
                               color: const Color(0xFF171717),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          SizedBox(height: size.height * 0.008),
-                          Text(
-                            'Periodo ${record.periodo}  •  Registro ${record.idRegistro}',
-                            style: TextStyle(
-                              fontSize: size.width * 0.038,
-                              color: const Color(0xFF6B6B6B),
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                     ),
                     SizedBox(height: size.height * 0.018),
-
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: size.width * 0.045,
+                        vertical: size.height * 0.018,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF6F6F6),
+                        borderRadius: BorderRadius.circular(size.width * 0.03),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            record.ativo ? 'Alarme ativo' : 'Alarme inativo',
+                            style: TextStyle(
+                              fontSize: size.width * 0.06,
+                              color: const Color(0xFF3EA75F),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     SizedBox(height: size.height * 0.018),
+                    SizedBox(
+                      width: double.infinity,
+                      height: size.height * 0.052,
+                      child: CustomButtonWidget(
+                        text: 'Editar Alarme',
+                        isFontBold: true,
+                        textSize: size.width * 0.043,
+                        textColor: Colors.white,
+                        onpressTextColor: Colors.white,
+                        bgColor: const Color.fromARGB(255, 59, 109, 244),
+                        onpressBgColor: const Color.fromARGB(255, 41, 87, 210),
+                        borderRadius: BorderRadius.circular(10),
+                        onPressed: () async {
+                          Navigator.pop(dialogContext);
+                          final updated = await Navigator.pushNamed(
+                            context,
+                            '/clock_register',
+                            arguments: record,
+                          );
 
+                          if (updated == true && context.mounted) {
+                            await refreshClockRecords();
+                          }
+                        },
+                      ),
+                    ),
                     SizedBox(height: size.height * 0.009),
+                    SizedBox(
+                      width: double.infinity,
+                      height: size.height * 0.052,
+                      child: _DeleteAlarmButton(
+                        size: size,
+                        onDelete: () async {
+                          await deleteClockAlarm(record);
+
+                          if (dialogContext.mounted) {
+                            Navigator.pop(dialogContext);
+                          }
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -270,5 +653,76 @@ class ClockState extends ChangeNotifier {
 
     _recordSelectedId = null;
     notifyListeners();
+  }
+}
+
+class _DeleteAlarmButton extends StatefulWidget {
+  final Size size;
+  final Future<void> Function() onDelete;
+
+  const _DeleteAlarmButton({required this.size, required this.onDelete});
+
+  @override
+  State<_DeleteAlarmButton> createState() => _DeleteAlarmButtonState();
+}
+
+class _DeleteAlarmButtonState extends State<_DeleteAlarmButton> {
+  bool _isDeleting = false;
+
+  Future<void> _handleDelete() async {
+    if (_isDeleting) {
+      return;
+    }
+
+    setState(() {
+      _isDeleting = true;
+    });
+
+    try {
+      await widget.onDelete();
+    } on DataException catch (e) {
+      if (mounted) {
+        Flushbar(
+          flushbarPosition: FlushbarPosition.TOP,
+          message: e.message,
+          messageColor: Colors.white,
+          backgroundColor: const Color.fromARGB(255, 211, 47, 47),
+          duration: const Duration(seconds: 3),
+        ).show(context);
+
+        setState(() {
+          _isDeleting = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromARGB(255, 210, 44, 44),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onPressed: _isDeleting ? null : _handleDelete,
+      child: _isDeleting
+          ? SizedBox(
+              width: widget.size.width * 0.045,
+              height: widget.size.width * 0.045,
+              child: const CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+          : Text(
+              'Excluir',
+              style: TextStyle(
+                fontSize: widget.size.width * 0.043,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:insulog/DTO/ENUMs/enum_clock_register.dart';
+import 'package:insulog/services/api/data_service.dart';
 import 'package:insulog/states/clock_state.dart';
 
 class ClockRecordListWidget extends StatelessWidget {
@@ -84,15 +85,7 @@ class _ClockRecordCardState extends State<_ClockRecordCard> {
     "DOM",
   ];
   bool isPressed = false;
-  IconData get icone => widget.record.periodo == 1
-      ? Icons.wb_twilight
-      : widget.record.periodo == 2
-      ? Icons.restaurant
-      : widget.record.periodo == 3
-      ? Icons.local_dining
-      : widget.record.periodo == 4
-      ? Icons.nights_stay
-      : Icons.error;
+  
   List<String> get diasSemanaSelec => widget.record.diasSemana is String
       ? (widget.record.diasSemana as String)
             .split(',')
@@ -121,6 +114,7 @@ class _ClockRecordCardState extends State<_ClockRecordCard> {
   @override
   Widget build(BuildContext context) {
     final isSelected = widget.state.isRecordSelected(widget.record);
+    final isUpdating = widget.state.isUpdatingAlarm(widget.record.idAlarme);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onLongPress: () {
@@ -238,11 +232,11 @@ class _ClockRecordCardState extends State<_ClockRecordCard> {
                           ],
                         ),
                       )
-                    : const Text('test'),
+                    : const Text(''),
               ),
 
               Switch(
-                value: !widget.record.ativo,
+                value: widget.record.ativo,
                 activeColor: const Color(0xFF3EA75F),
 
                 inactiveThumbColor: const Color.fromARGB(255, 255, 255, 255),
@@ -258,7 +252,24 @@ class _ClockRecordCardState extends State<_ClockRecordCard> {
                   return const Color(0xFF3EA75F); // borda quando ativo
                 }),
 
-                onChanged: (newValue) {},
+                onChanged: isUpdating
+                    ? null
+                    : (newValue) async {
+                        try {
+                          await widget.state.updateAlarmStatus(
+                            widget.record,
+                            newValue,
+                          );
+                        } on DataException catch (e) {
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.message)),
+                          );
+                        }
+                      },
               ),
             ],
           ),

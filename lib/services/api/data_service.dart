@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:insulog/DTO/ENUMs/clock_alarm_draft.dart';
 import 'package:insulog/DTO/ENUMs/enum_clock_register.dart';
 import 'package:insulog/DTO/ENUMs/enum_form_registroGlicose.dart';
 import 'package:insulog/DTO/ENUMs/enum_registroGlicose.dart';
@@ -72,13 +73,63 @@ class DataService {
     }
   }
 
-  Future<void> createClockAlarm(EnumClockRegister alarm) async {
+  Future<void> createClockAlarm(ClockAlarmDraft alarm) async {
     try {
       await _apiService.post('alarmes', alarm.toCreateJson());
     } on ApiException catch (e) {
       throw DataException(e.message, statusCode: e.statusCode);
     } catch (e) {
       throw DataException('Erro ao criar alarme: $e');
+    }
+  }
+
+  Future<EnumClockRegister> updateClockAlarm(
+    int idAlarme,
+    EnumClockRegister alarm,
+  ) async {
+    try {
+      final response = await _apiService.put(
+        'alarmes/$idAlarme',
+        alarm.toUpdateJson(),
+      );
+
+      if (response is Map<String, dynamic>) {
+        final data = response['data'] ?? response['alarme'];
+        final alarmJson = data is Map<String, dynamic> ? data : response;
+
+        return EnumClockRegister.fromJson(alarmJson);
+      }
+
+      throw DataException('Resposta inesperada da API.');
+    } on ApiException catch (e) {
+      throw DataException(e.message, statusCode: e.statusCode);
+    } on DataException {
+      rethrow;
+    } catch (e) {
+      throw DataException('Erro ao atualizar alarme: $e');
+    }
+  }
+
+  Future<void> updateClockAlarmDetails(
+    int idAlarme,
+    ClockAlarmDraft alarm,
+  ) async {
+    try {
+      await _apiService.put('alarmes/$idAlarme', alarm.toUpdateJson());
+    } on ApiException catch (e) {
+      throw DataException(e.message, statusCode: e.statusCode);
+    } catch (e) {
+      throw DataException('Erro ao atualizar alarme: $e');
+    }
+  }
+
+  Future<void> deleteClockAlarm(int idAlarme) async {
+    try {
+      await _apiService.delete('alarmes/$idAlarme');
+    } on ApiException catch (e) {
+      throw DataException(e.message, statusCode: e.statusCode);
+    } catch (e) {
+      throw DataException('Erro ao excluir alarme: $e');
     }
   }
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:insulog/states/clock_state.dart';
 import 'package:insulog/widgets/clock/clock_header_widget.dart';
 import 'package:insulog/widgets/clock/clock_record_list_widget.dart';
@@ -17,8 +16,7 @@ class ClockPage extends StatefulWidget {
 class _ClockPageState extends State<ClockPage> {
   final ClockState stateClock = ClockState();
 
-  static const _alarmChannel = MethodChannel('insulog/alarm');
-  bool _scheduling = false;
+  bool scheduling = false;
 
   @override
   initState() {
@@ -41,25 +39,6 @@ class _ClockPageState extends State<ClockPage> {
     super.dispose();
   }
 
-  Future<void> _scheduleTestAlarm() async {
-    setState(() => _scheduling = true);
-    try {
-      final message = await _alarmChannel.invokeMethod<String>(
-        'scheduleTestAlarm',
-      );
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message ?? 'Teste preparado.')));
-    } on PlatformException catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Nao foi possivel agendar: ${error.message}')),
-      );
-    } finally {
-      if (mounted) setState(() => _scheduling = false);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +48,15 @@ class _ClockPageState extends State<ClockPage> {
         width: size.width * 0.4,
         height: size.height * 0.08,
         child: CustomButtonWidget(
-          onPressed: () {
-            Navigator.pushNamed(context, '/clock_register');
+          onPressed: () async {
+            final created = await Navigator.pushNamed(
+              context,
+              '/clock_register',
+            );
+
+            if (created == true && mounted) {
+              await stateClock.refreshClockRecords();
+            }
           },
           text: "Novo Registro",
           isFontBold: true,
