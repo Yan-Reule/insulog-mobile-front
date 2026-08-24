@@ -35,7 +35,7 @@ class ClockAlarmDraft {
       dataHora: defaultDateTime,
       periodoId: 0,
       registroId: 0,
-      diasSemana: const [],
+      diasSemana: const ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'],
       ativo: true,
       vibracao: true,
       som: false,

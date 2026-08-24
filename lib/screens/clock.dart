@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:insulog/states/clock_state.dart';
+import 'package:insulog/services/local/alarm_platform_service.dart';
 import 'package:insulog/widgets/clock/clock_header_widget.dart';
 import 'package:insulog/widgets/clock/clock_record_list_widget.dart';
 import 'package:insulog/widgets/custom_button_widget.dart';
@@ -23,6 +24,7 @@ class _ClockPageState extends State<ClockPage> {
     super.initState();
     stateClock.addListener(handleNotify);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      AlarmPlatformService.instance.ensurePermissions();
       stateClock.refreshClockRecords();
     });
   }
@@ -38,7 +40,6 @@ class _ClockPageState extends State<ClockPage> {
     stateClock.removeListener(handleNotify);
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {

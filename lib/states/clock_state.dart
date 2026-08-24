@@ -4,6 +4,7 @@ import 'package:insulog/DTO/ENUMs/clock_alarm_draft.dart';
 import 'package:insulog/DTO/ENUMs/enum_clock_register.dart';
 import 'package:insulog/globals.dart';
 import 'package:insulog/services/api/data_service.dart';
+import 'package:insulog/services/local/alarm_platform_service.dart';
 import 'package:insulog/services/local/saved_login_service.dart';
 import 'package:insulog/widgets/custom_button_widget.dart';
 
@@ -17,6 +18,8 @@ class ClockState extends ChangeNotifier {
   List<EnumClockRegister> _registros = [];
 
   final SavedLoginService _savedLoginService = SavedLoginService();
+  final AlarmPlatformService _alarmPlatformService =
+      AlarmPlatformService.instance;
   int? _recordSelectedId;
   bool _isLoading = false;
   bool _isSaving = false;
@@ -52,7 +55,6 @@ class ClockState extends ChangeNotifier {
       vibracao: alarm.temVibracao,
       som: alarm.temSom,
     );
-    notifyListeners();
   }
 
   Future<void> saveAlarm(BuildContext context) async {
@@ -101,6 +103,7 @@ class ClockState extends ChangeNotifier {
       );
       if (isEditing) {
         await DataService().updateClockAlarmDetails(_editingAlarmId!, alarm);
+        await _alarmPlatformService.scheduleDraft(_editingAlarmId!, alarm);
       } else {
         await DataService().createClockAlarm(alarm);
       }
@@ -286,6 +289,7 @@ class ClockState extends ChangeNotifier {
       final dados = await DataService().fetchClockData(userId);
 
       setRegistros(dados.registros);
+      await _alarmPlatformService.syncAlarms(dados.registros);
     } on DataException catch (e) {
       _errorMessage = e.message;
       debugPrint(e.toString());
@@ -328,14 +332,18 @@ class ClockState extends ChangeNotifier {
   }
 
   String infoLembrete(bool isReturnHora) {
-    if (_registros.isEmpty) {
-      return '<@>';
+    final alarmesAtivos = _registros.where((record) => record.ativo).toList();
+    if (alarmesAtivos.isEmpty) {
+      return 'Sem Lembretes ativos';
     }
 
-    final proximoAlarme = _registros.firstWhere(
-      (record) => record.ativo,
-      orElse: () => _registros.first,
+    final agora = DateTime.now();
+    alarmesAtivos.sort(
+      (a, b) => _proximaOcorrencia(a, agora).compareTo(
+        _proximaOcorrencia(b, agora),
+      ),
     );
+    final proximoAlarme = alarmesAtivos.first;
 
     final hora = formataHora(proximoAlarme.dataHora);
     final diasSemana = formataDiasSemana(proximoAlarme.diasSemana);
@@ -345,6 +353,42 @@ class ClockState extends ChangeNotifier {
     } else {
       return diasSemana;
     }
+  }
+
+  DateTime _proximaOcorrencia(EnumClockRegister alarme, DateTime agora) {
+    const diasDaSemana = {
+      'SEG': DateTime.monday,
+      'TER': DateTime.tuesday,
+      'QUA': DateTime.wednesday,
+      'QUI': DateTime.thursday,
+      'SEX': DateTime.friday,
+      'SAB': DateTime.saturday,
+      'DOM': DateTime.sunday,
+    };
+    final horario = alarme.dataHora.toLocal();
+    final diasValidos = alarme.diasSemana
+        .map((dia) => diasDaSemana[dia.trim().toUpperCase()])
+        .whereType<int>()
+        .toSet();
+
+    for (var deslocamento = 0; deslocamento <= 7; deslocamento++) {
+      final data = agora.add(Duration(days: deslocamento));
+      final candidata = DateTime(
+        data.year,
+        data.month,
+        data.day,
+        horario.hour,
+        horario.minute,
+      );
+      final diaCompativel =
+          diasValidos.isEmpty || diasValidos.contains(candidata.weekday);
+      if (diaCompativel && candidata.isAfter(agora)) {
+        return candidata;
+      }
+    }
+
+    // O intervalo acima sempre encontra uma ocorrência semanal válida.
+    throw StateError('Não foi possível calcular a próxima ocorrência.');
   }
 
   void setRegistros(List<EnumClockRegister> registros) {
@@ -380,6 +424,11 @@ class ClockState extends ChangeNotifier {
       if (index >= 0) {
         _registros[index] = updatedAlarm;
       }
+      if (ativo) {
+        await _alarmPlatformService.scheduleAlarm(updatedAlarm);
+      } else {
+        await _alarmPlatformService.cancelAlarm(record.idAlarme);
+      }
     } on DataException catch (e) {
       _errorMessage = e.message;
       rethrow;
@@ -391,6 +440,7 @@ class ClockState extends ChangeNotifier {
 
   Future<void> deleteClockAlarm(EnumClockRegister record) async {
     await DataService().deleteClockAlarm(record.idAlarme);
+    await _alarmPlatformService.cancelAlarm(record.idAlarme);
     _registros.removeWhere((alarm) => alarm.idAlarme == record.idAlarme);
     notifyListeners();
   }

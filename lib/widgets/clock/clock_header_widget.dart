@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:insulog/states/clock_state.dart';
-import 'package:insulog/widgets/dotted_line_widget.dart';
 
 class ClockHeaderWidget extends StatelessWidget {
   final Size size;
@@ -97,8 +96,8 @@ class ClockHeaderWidget extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      state.infoLembrete(true) == '<@>'
-                          ? ''
+                      state.infoLembrete(true) == 'Sem Lembretes ativos'
+                          ? 'Sem Lembretes ativos'
                           : "Próximo alarme: ${state.infoLembrete(true)}",
                       maxLines: 2,
                       textAlign: TextAlign.center,
@@ -110,7 +109,7 @@ class ClockHeaderWidget extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      state.infoLembrete(true) == '<@>'
+                      state.infoLembrete(true) == 'Sem Lembretes ativos'
                           ? ''
                           : state.infoLembrete(false),
                       maxLines: 2,

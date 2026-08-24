@@ -16,6 +16,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
+import java.util.Locale
 
 class AlarmService : Service() {
     private var mediaPlayer: MediaPlayer? = null
@@ -32,32 +33,46 @@ class AlarmService : Service() {
             return START_NOT_STICKY
         }
 
-        startForeground(NOTIFICATION_ID, buildNotification())
-        startAlarmSound()
-        startVibration()
+        val alarmId = intent?.getIntExtra(EXTRA_ALARM_ID, 0) ?: 0
+        val title = intent?.getStringExtra(EXTRA_TITLE) ?: "Lembrete do Insulog"
+        val hour = intent?.getIntExtra(EXTRA_HOUR, 0) ?: 0
+        val minute = intent?.getIntExtra(EXTRA_MINUTE, 0) ?: 0
+        val sound = intent?.getBooleanExtra(EXTRA_SOUND, true) ?: true
+        val vibration = intent?.getBooleanExtra(EXTRA_VIBRATION, true) ?: true
+        startForeground(notificationId(alarmId), buildNotification(alarmId, title, hour, minute))
+        if (sound) startAlarmSound()
+        if (vibration) startVibration()
         return START_NOT_STICKY
     }
 
-    private fun buildNotification(): android.app.Notification {
+    private fun buildNotification(
+        alarmId: Int,
+        title: String,
+        hour: Int,
+        minute: Int
+    ): android.app.Notification {
+        val alarm = AlarmRepository(this).get(alarmId) ?: AlarmData(
+            alarmId, hour, minute, emptyList(), true, true, true, title
+        )
         val openApp = PendingIntent.getActivity(
             this,
-            1002,
-            Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            },
+            alarmId,
+            AlarmActivity.intent(this, alarm),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val stopAlarm = PendingIntent.getService(
             this,
-            1003,
+            alarmId,
             Intent(this, AlarmService::class.java).apply { action = ACTION_STOP },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(applicationInfo.icon)
-            .setContentTitle("Alarme do Insulog")
-            .setContentText("Toque em Desligar para parar o som e a vibracao.")
+            .setContentTitle(title)
+            .setContentText(
+                String.format(Locale.getDefault(), "%02d:%02d — toque para abrir", hour, minute)
+            )
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -123,9 +138,17 @@ class AlarmService : Service() {
     companion object {
         const val ACTION_START = "com.example.insulog.START_ALARM"
         const val ACTION_STOP = "com.example.insulog.STOP_ALARM"
+        const val EXTRA_ALARM_ID = "alarm_id"
+        const val EXTRA_TITLE = "alarm_title"
+        const val EXTRA_HOUR = "alarm_hour"
+        const val EXTRA_MINUTE = "alarm_minute"
+        const val EXTRA_SOUND = "alarm_sound"
+        const val EXTRA_VIBRATION = "alarm_vibration"
         private const val CHANNEL_ID = "insulog_ringing_alarm"
-        private const val NOTIFICATION_ID = 1001
+        private const val NOTIFICATION_ID_BASE = 20_000
     }
+
+    private fun notificationId(alarmId: Int): Int = NOTIFICATION_ID_BASE + alarmId.coerceAtLeast(0)
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
