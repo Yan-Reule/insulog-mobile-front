@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class StatsReportWidget extends StatelessWidget {
   final String title;
-  final int value;
+  final int? value;
   final int tipe;
   final Size size;
 
@@ -74,7 +74,7 @@ class StatsReportWidget extends StatelessWidget {
               size: size.width * 0.08,
             ),
             Text(
-              value.toString(),
+              value?.toString() ?? ' ',
               style: TextStyle(
                 height: 0,
                 fontSize: size.width * 0.05,

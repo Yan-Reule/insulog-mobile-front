@@ -14,6 +14,9 @@ class ReportPage extends StatefulWidget {
 
 class _ReportPageState extends State<ReportPage> {
   final ReportState reportState = ReportState();
+  void _openExportScreen() {
+    Navigator.pushNamed(context, '/export_report', arguments: reportState);
+  }
 
   @override
   void initState() {
@@ -45,10 +48,10 @@ class _ReportPageState extends State<ReportPage> {
         width: size.width * 0.4,
         height: size.height * 0.08,
         child: CustomButtonWidget(
-          // onPressed:  ,
-          text: "Exportar",
+          onPressed: _openExportScreen,
+          text: "Gerar | Exportar",
           isFontBold: true,
-          icon: Icons.add,
+          
           textColor: Color.fromARGB(255, 255, 255, 255),
           onpressTextColor: Color.fromARGB(255, 255, 255, 255),
           bgColor: Color(0xFF3EA75F),
