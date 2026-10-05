@@ -51,7 +51,7 @@ class StatsReportWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 8.0),
+            SizedBox(height: 4.0),
             Icon(
               color: tipe == 1
                   ? Colors.grey
@@ -73,21 +73,27 @@ class StatsReportWidget extends StatelessWidget {
                   : Icons.water_drop,
               size: size.width * 0.08,
             ),
-            Text(
-              value?.toString() ?? ' ',
-              style: TextStyle(
-                height: 0,
-                fontSize: size.width * 0.05,
-                fontWeight: FontWeight.bold,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value?.toString() ?? ' ',
+                style: TextStyle(
+                  height: 0,
+                  fontSize: size.width * 0.05,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.grey[800],
-                height: 0,
-                fontSize: size.width * 0.05,
-                fontWeight: FontWeight.w500,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: Colors.grey[800],
+                  height: 0,
+                  fontSize: size.width * 0.05,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
