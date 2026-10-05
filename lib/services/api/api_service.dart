@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:insulog/globals.dart';
 import 'package:insulog/services/local/api_ip_service.dart';
 
 class ApiService {
@@ -18,6 +19,7 @@ class ApiService {
   Map<String, String> get headers => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    if (Globals().token.isNotEmpty) 'Authorization': 'Bearer ${Globals().token}',
   };
 
   Future<dynamic> post(String endPoint, Map<String, dynamic> body) async {
@@ -278,7 +280,8 @@ class ApiService {
         final shouldMask =
             keyText.contains('senha') ||
             keyText.contains('password') ||
-            keyText.contains('token');
+          keyText.contains('token') ||
+          keyText.contains('codigo_vinculo');
 
         return MapEntry(key, shouldMask ? '***' : _sanitizePayload(value));
       });

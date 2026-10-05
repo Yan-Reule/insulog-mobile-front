@@ -18,9 +18,10 @@ class AuthService {
 
       if (response is Map<String, dynamic>) {
         final userId = _readUserId(response);
+        final token = _readToken(response);
 
-        if (userId != null) {
-          return LoginData(userId: userId);
+        if (userId != null && token != null) {
+          return LoginData(userId: userId, token: token);
         }
       }
 
@@ -63,6 +64,12 @@ class AuthService {
     return null;
   }
 
+  String? _readToken(Map<String, dynamic> json) {
+    final user = json['user'] ?? json['usuario'] ?? json['data'];
+    final token = user is Map<String, dynamic> ? user['token'] : json['token'];
+    return token is String && token.isNotEmpty ? token : null;
+  }
+
   int? _parseId(dynamic value) {
     if (value is int) {
       return value;
@@ -92,7 +99,6 @@ class AuthService {
         'senha': password,
         'tipo_login': 'email',
         'tipo_usuario': 'paciente',
-        'id_medico': 16
       });
     } on ApiException catch (e) {
       if (e.statusCode == 400) {
@@ -103,12 +109,33 @@ class AuthService {
       throw AuthException('Erro ao tentar cadastrar: $e', statusCode: 500);
     }
   }
+
+  Future<Map<String, dynamic>> getDoctorLink() async {
+    try {
+      final response = await _apiService.get('pacientes/vinculo');
+      if (response is Map<String, dynamic>) return response;
+      throw AuthException('Resposta inesperada ao buscar vinculo.', statusCode: 500);
+    } on ApiException catch (e) {
+      throw AuthException(e.message, statusCode: e.statusCode);
+    }
+  }
+
+  Future<void> redeemDoctorLink(String code) async {
+    try {
+      await _apiService.post('pacientes/vinculo', {
+        'codigo_vinculo': code.trim().toUpperCase(),
+      });
+    } on ApiException catch (e) {
+      throw AuthException(e.message, statusCode: e.statusCode);
+    }
+  }
 }
 
 class LoginData {
   final int userId;
+  final String token;
 
-  const LoginData({required this.userId});
+  const LoginData({required this.userId, required this.token});
 }
 
 class AuthException implements Exception {
