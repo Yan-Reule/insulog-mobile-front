@@ -22,7 +22,9 @@ class HomeHeaderWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Olá, ${state.returnNameLogin()}!',
+                    state.returnNameLogin().isEmpty
+                        ? 'Olá!'
+                        : 'Olá, ${state.returnNameLogin()}!',
                     style: TextStyle(
                       fontSize: size.width * 0.08,
                       fontWeight: FontWeight.bold,

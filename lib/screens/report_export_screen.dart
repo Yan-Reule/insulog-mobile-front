@@ -50,7 +50,7 @@ class _ReportExportScreenState extends State<ReportExportScreen> {
                   : () => widget.state.exportReport(context),
               isLoading: widget.state.isExporting,
               loadingColor: Colors.white,
-              text: 'Exportar',
+              text: 'Baixar relatório',
               isFontBold: true,
               icon: Icons.file_download_outlined,
               textColor: Colors.white,

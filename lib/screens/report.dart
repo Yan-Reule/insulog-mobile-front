@@ -49,9 +49,9 @@ class _ReportPageState extends State<ReportPage> {
         height: size.height * 0.08,
         child: CustomButtonWidget(
           onPressed: _openExportScreen,
-          text: "Gerar | Exportar",
+          text: "BAIXAR\nRELATÓRIO",
+          icon: Icons.download,
           isFontBold: true,
-          
           textColor: Color.fromARGB(255, 255, 255, 255),
           onpressTextColor: Color.fromARGB(255, 255, 255, 255),
           bgColor: Color(0xFF3EA75F),

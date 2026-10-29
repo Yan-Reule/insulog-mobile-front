@@ -67,8 +67,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text('dia 16 até dia 24'), findsOneWidget);
       final buttonFinder = find.byWidgetPredicate(
-        (widget) => widget is CustomButtonWidget && widget.text == 'Exportar',
+        (widget) =>
+            widget is CustomButtonWidget && widget.text == 'Baixar relatório',
       );
       expect(
         tester.widget<CustomButtonWidget>(buttonFinder).onPressed,

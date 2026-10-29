@@ -109,6 +109,7 @@ class ApiService {
   Future<dynamic> get(
     String endPoint, {
     Map<String, dynamic>? queryParameters,
+    String? accessToken,
   }) async {
     final formattedQueryParameters = queryParameters
         ?.map((key, value) => MapEntry(key, value?.toString()))
@@ -130,7 +131,10 @@ class ApiService {
       _logRequest('GET', uri);
 
       final response = await http
-          .get(uri, headers: headers)
+          .get(uri, headers: {
+            ...headers,
+            if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+          })
           .timeout(const Duration(seconds: 10));
 
       data = _decodeResponseBody(response.body);

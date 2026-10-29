@@ -44,9 +44,9 @@ class _LoginformState extends State<Loginform> {
           children: [
             InputTextWidget(
               size: widget.size,
-              label: 'Usuario',
+              label: 'Nome ou e-mail',
               controller: widget.loginFormState.usernameController,
-              placeholder: 'Nome de Usuario',
+              placeholder: 'Digite seu nome ou e-mail',
               isPassword: false,
               errorMessage: widget.loginFormState.usernameError, 
             ),

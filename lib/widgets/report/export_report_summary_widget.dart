@@ -6,8 +6,13 @@ class ExportReportSummaryWidget extends StatelessWidget {
 
   final ReportState state;
 
+  static const Color green = Color(0xFF3EA75F);
+  static const Color textColor = Color(0xFF171717);
+  static const Color borderColor = Color(0xFFCCCCCC);
+
   Future<void> _selectPeriod(BuildContext context) async {
     final now = DateTime.now();
+
     final range = await showDateRangePicker(
       context: context,
       locale: const Locale('pt', 'BR'),
@@ -15,19 +20,17 @@ class ExportReportSummaryWidget extends StatelessWidget {
       lastDate: DateTime(now.year + 10, 12, 31),
       initialDateRange: state.exportWeekRange,
       initialEntryMode: DatePickerEntryMode.calendarOnly,
-      helpText: 'Selecione o início e o fim da semana',
-      // saveText: 'Confirmar',
-      // cancelText: 'Cancelar',
+      helpText: 'Selecione o início e o fim do período',
       fieldStartLabelText: 'Data inicial',
       fieldEndLabelText: 'Data final',
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF3EA75F),
-            primary: const Color(0xFF3EA75F),
+            seedColor: green,
+            primary: green,
             onPrimary: Colors.white,
             surface: Colors.white,
-            onSurface: const Color(0xFF171717),
+            onSurface: textColor,
           ),
           datePickerTheme: DatePickerThemeData(
             backgroundColor: Colors.white,
@@ -36,9 +39,9 @@ class ExportReportSummaryWidget extends StatelessWidget {
             rangePickerSurfaceTintColor: Colors.transparent,
             rangePickerShape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: const BorderSide(color: Color(0xFFCCCCCC)),
+              side: const BorderSide(color: borderColor),
             ),
-            rangePickerHeaderBackgroundColor: const Color(0xFF3EA75F),
+            rangePickerHeaderBackgroundColor: green,
             rangePickerHeaderForegroundColor: Colors.white,
             rangePickerHeaderHelpStyle: const TextStyle(
               fontSize: 14,
@@ -48,16 +51,16 @@ class ExportReportSummaryWidget extends StatelessWidget {
               fontSize: 24,
               fontWeight: FontWeight.w700,
             ),
-            rangeSelectionBackgroundColor: const Color(0xFFE2F2E7),
-            dividerColor: const Color(0xFFEEEEEE),
-            todayBorder: const BorderSide(color: Color(0xFF3EA75F)),
+            rangeSelectionBackgroundColor: Color(0xFFE2F2E7),
+            dividerColor: Color(0xFFEEEEEE),
+            todayBorder: BorderSide(color: green),
           ),
         ),
         child: SafeArea(
           minimum: const EdgeInsets.all(16),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600),
+              constraints: const BoxConstraints(maxWidth: 480),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
                 child: child!,
@@ -67,198 +70,205 @@ class ExportReportSummaryWidget extends StatelessWidget {
         ),
       ),
     );
-    if (range != null && context.mounted) state.selectExportWeekRange(range);
+
+    if (range != null && context.mounted) {
+      state.selectExportWeekRange(range);
+    }
   }
+
+ 
+String _formatPeriod() {
+  final start = state.exportWeekRange.start;
+  final end = state.exportWeekRange.end;
+
+  final startDay = start.day.toString().padLeft(2, '0');
+  final endDay = end.day.toString().padLeft(2, '0');
+
+  if (start.month == end.month && start.year == end.year) {
+    return '$startDay a $endDay';
+  }
+
+  final startMonth = start.month.toString().padLeft(2, '0');
+  final endMonth = end.month.toString().padLeft(2, '0');
+
+  return '$startDay/$startMonth a $endDay/$endMonth';
+}
+
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: state,
-      builder: (context, _) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFCCCCCC)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                border: Border(
-                  bottom: BorderSide(color: const Color(0xFFCCCCCC)),
+      builder: (context, _) {
+        final isWeek = state.exportPeriod == ReportExportPeriod.week;
+
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: borderColor),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
                 ),
-              ),
-              child: const Text(
-                'Exportação de Registros',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 21,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF171717),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 4, 14, 12),
-              child: Column(
-                children: [
-                  _row(
-                    'Data',
-                    state.exportDateLabel,
-                    compactLabel: true,
-                    action: state.exportPeriod == ReportExportPeriod.week
-                        ? Column(
-                            children: [
-                              Row(
-                                children: [
-                                  IconButton(
-                                    tooltip: 'Semana anterior',
-                                    onPressed: state.canGoToPreviousExportWeek
-                                        ? state.previousExportWeek
-                                        : null,
-                                    icon: const Icon(Icons.chevron_left),
-                                    color: const Color(0xFF3EA75F),
-                                  ),
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        _periodLine(
-                                          'Semana ${state.exportWeekNumber}',
-                                        ),
-                                        const SizedBox(height: 4),
-                                        _periodLine(
-                                          '${state.selectedMonth} de ${state.selectedYear}',
-                                        ),
-                                        const SizedBox(height: 8),
-                                        _periodLine(
-                                          state.exportDateLabel,
-                                          highlighted: true,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  IconButton(
-                                    tooltip: 'Próxima semana',
-                                    onPressed: state.canGoToNextExportWeek
-                                        ? state.nextExportWeek
-                                        : null,
-                                    icon: const Icon(Icons.chevron_right),
-                                    color: const Color(0xFF3EA75F),
-                                  ),
-                                ],
-                              ),
-                              TextButton.icon(
-                                onPressed: () => _selectPeriod(context),
-                                icon: const Icon(
-                                  Icons.edit_calendar_outlined,
-                                  size: 18,
-                                ),
-                                label: const Text('Editar período'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: const Color(0xFF3EA75F),
-                                  textStyle: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        : null,
-                  ),
-                  if (state.exportPeriod == ReportExportPeriod.week)
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: const Color(
-                              0xFF3EA75F,
-                            ).withValues(alpha: 0.6),
-                            width: 2,
-                          ),
+                      width: 42,
+                      child: Icon(
+                        Icons.calendar_month_outlined,
+                        size: 22,
+                        color: green,
+                      ),
+                    ),
+                    const Flexible(
+                      child: Text(
+                        'Período em Dias',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: textColor,
                         ),
                       ),
                     ),
-                  _row('Formato', state.exportFormatLabel),
-                  _row('Tipo de Dados', 'Glicose, insulina, período'),
+                    SizedBox(width: 42),
+                  ],
+                ),
+              ),
+
+              const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                child: isWeek
+                    ? _buildWeekSelector(context)
+                    : _buildMonthSelector(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWeekSelector(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _navigationButton(
+              icon: Icons.chevron_left,
+              label: 'Semana anterior',
+              onPressed: state.canGoToPreviousExportWeek
+                  ? state.previousExportWeek
+                  : null,
+            ),
+
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _formatPeriod(),
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '${state.selectedMonth} de ${state.selectedYear}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF777777),
+                    ),
+                  ),
                 ],
               ),
             ),
+
+            _navigationButton(
+              icon: Icons.chevron_right,
+              label: 'Próxima semana',
+              onPressed: state.canGoToNextExportWeek
+                  ? state.nextExportWeek
+                  : null,
+            ),
           ],
         ),
-      ),
+
+        const SizedBox(height: 12),
+
+        TextButton.icon(
+          onPressed: () => _selectPeriod(context),
+          icon: const Icon(Icons.edit_calendar_outlined, size: 18),
+          label: const Text('Editar período'),
+          style: TextButton.styleFrom(
+            foregroundColor: green,
+            textStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _periodLine(String text, {bool highlighted = false}) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
+  Widget _buildMonthSelector() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
-        text,
-        maxLines: 1,
+        '${state.selectedMonth} de ${state.selectedYear}',
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: highlighted ? 20 : 16,
-          fontWeight: highlighted ? FontWeight.w700 : FontWeight.w600,
-          color: highlighted
-              ? const Color(0xFF171717)
-              : const Color(0xFF333333),
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: textColor,
         ),
       ),
     );
   }
 
-  Widget _row(
-    String label,
-    String value, {
-    Widget? action,
-    bool compactLabel = false,
+  Widget _navigationButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback? onPressed,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          if (compactLabel)
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF333333),
-              ),
-            )
-          else
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF333333),
-                ),
-              ),
-            ),
-          const SizedBox(width: 8),
-          Flexible(
-            fit: compactLabel ? FlexFit.tight : FlexFit.loose,
-            flex: 2,
-            child:
-                action ??
-                Text(
-                  value,
-                  textAlign: TextAlign.end,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF242424),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-          ),
-        ],
+    final enabled = onPressed != null;
+
+    return IconButton(
+      tooltip: label,
+      onPressed: onPressed,
+      icon: Icon(icon, size: 26),
+      color: enabled ? green : const Color(0xFFAAAAAA),
+      disabledColor: const Color(0xFFAAAAAA),
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.white,
+        side: BorderSide(color: enabled ? green : borderColor),
+        shape: const CircleBorder(),
+        minimumSize: const Size(42, 42),
+        tapTargetSize: MaterialTapTargetSize.padded,
       ),
     );
   }

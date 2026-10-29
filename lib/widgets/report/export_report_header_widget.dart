@@ -82,7 +82,7 @@ class ExportReportHeaderWidget extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Exportar',
+                                'Relatório',
                                 style: TextStyle(
                                   fontSize: 28,
                                   height: 1.1,
@@ -93,7 +93,7 @@ class ExportReportHeaderWidget extends StatelessWidget {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                'Exportar relatório',
+                                'Baixar relatório',
                                 style: TextStyle(
                                   fontSize: size.width * 0.045,
                                   height: 1.2,

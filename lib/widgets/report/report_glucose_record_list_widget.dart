@@ -39,7 +39,7 @@ class ReportGlucoseRecordListWidget extends StatelessWidget {
                 GestureDetector(
                   onTap: onShowLess,
                   child: Text(
-                    'Ver menos',
+                    'Menos',
                     style: TextStyle(
                       color: const Color(0xFF6B6B6B),
                       fontSize: size.width * 0.05,
@@ -55,7 +55,7 @@ class ReportGlucoseRecordListWidget extends StatelessWidget {
                 GestureDetector(
                   onTap: onShowMore,
                   child: Text(
-                    'Mostrar mais',
+                    'Mais',
                     style: TextStyle(
                       color: const Color(0xFF3EA75F),
                       fontSize: size.width * 0.055,

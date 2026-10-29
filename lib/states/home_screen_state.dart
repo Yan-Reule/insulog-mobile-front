@@ -413,13 +413,6 @@ class HomeScreenState extends ChangeNotifier {
   }
 
   Future<void> openScreen(BuildContext context) async {
-    final credenciais = await _savedLoginService.getCredentials();
-
-    if (credenciais != null) {
-      Globals().setUserId(credenciais.userId);
-      Globals().setUsername(credenciais.username);
-    }
-
     AppNotification.success(context, 'Login realizado com sucesso!');
 
     await refreshRecords();
@@ -471,11 +464,12 @@ class HomeScreenState extends ChangeNotifier {
   }
 
   String returnNameLogin() {
-    return Globals().username;
+    final name = Globals().username.trim();
+    return name.contains('@') ? '' : name.split(RegExp(r'\s+')).first;
   }
 
   String returnFirstNameCaractere() {
-    final username = Globals().username.trim();
+    final username = returnNameLogin();
 
     if (username.isEmpty) {
       return '';

@@ -59,7 +59,10 @@ class LoginFormState extends ChangeNotifier {
       );
 
       Globals().setUserId(loginData.userId);
-      Globals().setUsername(username);
+      Globals().setUsername(
+        loginData.name,
+      );
+      Globals().setEmail(loginData.email);
       Globals().setToken(loginData.token);
 
       isLoading = false;
@@ -115,7 +118,10 @@ class LoginFormState extends ChangeNotifier {
         savedCredentials.password,
       );
       Globals().setUserId(loginData.userId);
-      Globals().setUsername(savedCredentials.username);
+      Globals().setUsername(
+        loginData.name,
+      );
+      Globals().setEmail(loginData.email);
       Globals().setToken(loginData.token);
       isLoading = false;
       notifyListeners();

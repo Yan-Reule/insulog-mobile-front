@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ContainerCardWidget extends StatelessWidget {
   final Size size;
   final Widget child;
-  final double heightFactor;
+  final double? heightFactor;
   final double widthFactor;
   final bool isMarginTop;
 
@@ -11,7 +11,7 @@ class ContainerCardWidget extends StatelessWidget {
     super.key,
     required this.size,
     required this.child,
-    required this.heightFactor,
+    this.heightFactor,
     required this.widthFactor,
     this.isMarginTop = true,
   });
@@ -19,7 +19,7 @@ class ContainerCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: size.height * heightFactor,
+      height: heightFactor == null ? null : size.height * heightFactor!,
       width: size.width * widthFactor,
       margin: EdgeInsets.only(
         top: isMarginTop ? size.height * 0.03 : 0,

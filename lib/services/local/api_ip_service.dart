@@ -2,8 +2,33 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiIpService {
   static const String _apiIpDigitsKey = 'api_ip_digits';
+  static const String _apiConnectionModeKey = 'api_connection_mode';
   static const String _defaultApiIpDigits = '101735747';
+  static const String hostedApiBaseUrl =
+      'https://insulog-back-supa.onrender.com';
   static const int _apiPort = 3000;
+
+  Future<void> saveConnectionMode(ApiConnectionMode mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_apiConnectionModeKey, mode.name);
+  }
+
+  Future<ApiConnectionMode> getConnectionMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedMode = prefs.getString(_apiConnectionModeKey);
+
+    if (savedMode == ApiConnectionMode.local.name) {
+      return ApiConnectionMode.local;
+    }
+
+    if (savedMode == ApiConnectionMode.hosted.name) {
+      return ApiConnectionMode.hosted;
+    }
+
+    return prefs.containsKey(_apiIpDigitsKey)
+        ? ApiConnectionMode.local
+        : ApiConnectionMode.hosted;
+  }
 
   Future<void> saveApiIpDigits(String digits) async {
     final prefs = await SharedPreferences.getInstance();
@@ -16,6 +41,10 @@ class ApiIpService {
   }
 
   Future<String> getBaseUrl() async {
+    if (await getConnectionMode() == ApiConnectionMode.hosted) {
+      return hostedApiBaseUrl;
+    }
+
     final savedIp = await getApiIpDigits();
     final ip =
         (isValidIp(savedIp) ? savedIp : null) ??
@@ -159,3 +188,5 @@ class ApiIpService {
     return number != null && number >= 0 && number <= 255;
   }
 }
+
+enum ApiConnectionMode { hosted, local }
