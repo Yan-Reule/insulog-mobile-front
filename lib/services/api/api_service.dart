@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:insulog/globals.dart';
+import 'package:insulog/security/input_sanitizer.dart';
 import 'package:insulog/services/local/api_ip_service.dart';
 
 class ApiService {
@@ -24,13 +25,14 @@ class ApiService {
 
   Future<dynamic> post(String endPoint, Map<String, dynamic> body) async {
     final uri = await _buildUri(endPoint);
+    final safeBody = InputSanitizer.sanitizePayload(body);
     var data;
 
     try {
-      _logRequest('POST', uri, body: body);
+      _logRequest('POST', uri, body: safeBody);
 
       final response = await http
-          .post(uri, headers: headers, body: jsonEncode(body))
+          .post(uri, headers: headers, body: jsonEncode(safeBody))
           .timeout(const Duration(seconds: 10));
 
       data = _decodeResponseBody(response.body);
@@ -66,13 +68,14 @@ class ApiService {
 
   Future<dynamic> put(String endPoint, Map<String, dynamic> body) async {
     final uri = await _buildUri(endPoint);
+    final safeBody = InputSanitizer.sanitizePayload(body);
     var data;
 
     try {
-      _logRequest('PUT', uri, body: body);
+      _logRequest('PUT', uri, body: safeBody);
 
       final response = await http
-          .put(uri, headers: headers, body: jsonEncode(body))
+          .put(uri, headers: headers, body: jsonEncode(safeBody))
           .timeout(const Duration(seconds: 10));
 
       data = _decodeResponseBody(response.body);

@@ -5,6 +5,7 @@ import 'package:insulog/DTO/ENUMs/enum_form_registroGlicose.dart';
 import 'package:insulog/DTO/ENUMs/enum_historico_registro_glicose.dart';
 import 'package:insulog/DTO/ENUMs/enum_registroGlicose.dart';
 import 'package:insulog/DTO/ENUMs/enum_registroInsulina.dart';
+import 'package:insulog/security/access_guard.dart';
 import 'package:insulog/services/api/api_service.dart';
 import 'package:insulog/utils/api_date_time_formatter.dart';
 
@@ -23,6 +24,7 @@ class DataService {
     required DateTime dataFim,
   }) async {
     try {
+      AccessGuard.assertUserScope(idUsuario);
       final response = await _apiService.get(
         'registros-glicose/usuario/$idUsuario/historico',
         queryParameters: {
@@ -51,6 +53,7 @@ class DataService {
     bool isToday,
   ) async {
     try {
+      AccessGuard.assertUserScope(idUsuario);
       final hoje = DateTime.now();
       final inicioDoDia = DateTime(hoje.year, hoje.month, hoje.day);
       final fimDoDia = DateTime(hoje.year, hoje.month, hoje.day, 23, 59, 59);
@@ -84,6 +87,7 @@ class DataService {
 
   Future<EnumClockRegisterResponse> fetchClockData(int idUsuario) async {
     try {
+      AccessGuard.assertUserScope(idUsuario);
       final response = await _apiService.get('alarmes/usuario/$idUsuario');
 
       if (response is Map<String, dynamic>) {
@@ -167,6 +171,7 @@ class DataService {
     int quantidade = 4,
   }) async {
     try {
+      AccessGuard.assertUserScope(idUsuario);
       final response = await _apiService.get(
         'registros-insulina/usuario/$idUsuario',
         queryParameters: {'quantidade': quantidade},
