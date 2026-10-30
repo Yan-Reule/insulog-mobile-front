@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:insulog/security/access_guard.dart';
 import 'package:insulog/services/api/api_service.dart';
 import 'package:insulog/services/local/api_ip_service.dart';
 
@@ -46,6 +47,7 @@ class ReportExportService {
     required DateTime end,
     required ReportFormat format,
   }) async {
+    AccessGuard.assertUserScope(userId);
     final firstDay = formatDate(start);
     final lastDay = formatDate(end);
     if (userId <= 0 || firstDay.compareTo(lastDay) > 0) {

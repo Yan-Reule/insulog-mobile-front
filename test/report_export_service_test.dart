@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:insulog/globals.dart';
 import 'package:insulog/services/api/api_service.dart';
 import 'package:insulog/services/api/report_export_service.dart';
 
 void main() {
+  Globals().setUserId(19);
   final start = DateTime(2026, 8, 1);
   final end = DateTime(2026, 8, 31);
 

@@ -25,6 +25,10 @@ class Globals {
     _token = token;
   }
 
+  bool isAuthenticatedForUser(int userId) {
+    return _userId > 0 && _userId == userId;
+  }
+
   void clearUsername() {
     _userId = 0;
     _username = '';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:insulog/globals.dart';
+import 'package:insulog/security/bot_guard.dart';
 import 'package:insulog/services/api/auth_service.dart';
 import 'package:insulog/services/local/saved_login_service.dart';
 import 'package:insulog/widgets/app_notification.dart';
@@ -15,6 +16,8 @@ class LoginFormState extends ChangeNotifier {
   final SavedLoginService _savedLoginService = SavedLoginService();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController honeypotController = TextEditingController();
+  final List<DateTime> _recentAttempts = [];
 
   String get username => usernameController.text;
   String get password => passwordController.text;
@@ -35,6 +38,20 @@ class LoginFormState extends ChangeNotifier {
   String? get passwordError => passwordAuthError ?? passwordValidationError;
 
   Future<void> logar(BuildContext context) async {
+    final isBotAllowed = BotGuard.isAllowed(
+      attempts: List<DateTime>.from(_recentAttempts),
+      honeypot: honeypotController.text,
+    );
+
+    if (!isBotAllowed) {
+      loginError = 'Muitas tentativas seguidas. Tente novamente em alguns segundos.';
+      isLoading = false;
+      notifyListeners();
+      return;
+    }
+
+    _recentAttempts.add(DateTime.now());
+
     isClicked = true;
     _validateUsername();
     _validatePassword();
@@ -56,7 +73,11 @@ class LoginFormState extends ChangeNotifier {
         userId: loginData.userId,
         username: username,
         password: password,
+        token: loginData.token,
       );
+
+      _recentAttempts.clear();
+      honeypotController.clear();
 
       Globals().setUserId(loginData.userId);
       Globals().setUsername(username);
@@ -94,12 +115,12 @@ class LoginFormState extends ChangeNotifier {
   Future<bool> tryAutoLogin(BuildContext context) async {
     final savedCredentials = await _savedLoginService.getCredentials();
 
-    if (savedCredentials == null) {
+    if (savedCredentials == null || savedCredentials.token.isEmpty) {
       return false;
     }
 
     usernameController.text = savedCredentials.username;
-    passwordController.text = savedCredentials.password;
+    passwordController.text = '';
     _lastUsernameText = usernameController.text;
     _lastPasswordText = passwordController.text;
     isClicked = true;
@@ -110,13 +131,9 @@ class LoginFormState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final loginData = await AuthService().login(
-        savedCredentials.username,
-        savedCredentials.password,
-      );
-      Globals().setUserId(loginData.userId);
+      Globals().setUserId(savedCredentials.userId);
       Globals().setUsername(savedCredentials.username);
-      Globals().setToken(loginData.token);
+      Globals().setToken(savedCredentials.token);
       isLoading = false;
       notifyListeners();
 
@@ -216,6 +233,7 @@ class LoginFormState extends ChangeNotifier {
   void dispose() {
     usernameController.removeListener(_handleUsernameChanged);
     passwordController.removeListener(_handlePasswordChanged);
+    honeypotController.dispose();
     usernameController.dispose();
     passwordController.dispose();
     super.dispose();
