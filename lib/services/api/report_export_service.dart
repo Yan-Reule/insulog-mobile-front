@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:insulog/globals.dart';
 import 'package:insulog/services/api/api_service.dart';
 import 'package:insulog/services/local/api_ip_service.dart';
 
@@ -65,9 +66,13 @@ class ReportExportService {
             },
           );
       final get = _client?.get ?? http.get;
+      final token = Globals().token;
       final response = await get(
         uri,
-        headers: {'Accept': format.mimeType},
+        headers: {
+          'Accept': format.mimeType,
+          if (token.isNotEmpty) 'Authorization': 'Bearer $token',
+        },
       ).timeout(const Duration(seconds: 60));
 
       if (response.statusCode != 200) {
