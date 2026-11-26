@@ -16,7 +16,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   late final LoginFormState loginFormState;
-  bool isCheckingSavedLogin = true;
 
   @override
   void initState() {
@@ -24,17 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
     loginFormState = LoginFormState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).unfocus();
-      _checkSavedLogin();
-    });
-  }
-
-  Future<void> _checkSavedLogin() async {
-    await loginFormState.tryAutoLogin(context);
-
-    if (!mounted) return;
-
-    setState(() {
-      isCheckingSavedLogin = false;
+      loginFormState.tryAutoLogin(context);
     });
   }
 
@@ -48,20 +37,12 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    if (isCheckingSavedLogin) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: MainBody(
         children: Stack(
           children: [
-            Positioned(
-              top: 10,
-              right: 10,
-              child: const ConfigIpButtonWidget(),
-            ),
+            Positioned(top: 10, right: 10, child: const ConfigIpButtonWidget()),
 
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
